@@ -39,14 +39,16 @@ def _config_logging(logging_level='INFO', logging_file=None):
     return logger
 
 
-def master_conversor(mst_input, mst_output):
+def master_conversor(mst_input, mst_output, cisis_dir=None):
 
     logger.debug(u'Realizando conversão de bases para %s' % mst_input)
 
     status = '1'  # erro de acordo com stdout do CISIS
 
+    command = remove_last_slash(cisis_dir) + 'crunchmf' if cisis_dir else 'crunchmf'
+
     try:
-        status = subprocess.call(['crunchmf', mst_input, mst_output])
+        status = subprocess.call([command, mst_input, mst_output])
     except OSError as e:
         logger.error(u'Erro ao executar crunchmf, verifique se o comando esta no syspath, ou se o path do cisis foi indicado corretamente no arquivo de configuração')
 
@@ -100,10 +102,11 @@ def remove_last_slash(path):
 
 class Delivery(object):
 
-    def __init__(self, source_type, scilista, source_dir, destiny_dir,
+    def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
             compatibility_mode, ssh_server, ssh_port, ssh_user, ssh_password):
 
         self._scilista = parse_scilista(scilista)
+        self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_type = source_type
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
@@ -245,7 +248,12 @@ class Delivery(object):
                     continue
 
                 converted.add(from_fl_name)
-                convertion_status = master_conversor(from_fl_name, converted_fl)
+                convertion_status = master_conversor(
+                    from_fl_name,
+                    converted_fl,
+                    cisis_dir=self.cisis_dir
+                )
+
                 if not convertion_status:
                     continue
                 if convertion_status:
@@ -395,6 +403,13 @@ def main():
     )
 
     parser.add_argument(
+        '--cisis_dir',
+        '-r',
+        default=setts.get('cisis_dir', ''),
+        help=u'path absoluto para o local onde estão instalados os utilitários ISIS. Caso o utilitário esteja no syspath, não será necessário informar esse dado.'
+    )
+
+    parser.add_argument(
         '--scilista',
         '-i',
         default=setts.get('scilista', './serial/scilista.lst'),
@@ -469,6 +484,7 @@ def main():
 
     delivery = Delivery(
         args.source_type,
+        args.cisis_dir,
         args.scilista,
         args.source_dir,
         args.destiny_dir,
