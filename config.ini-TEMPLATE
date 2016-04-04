@@ -1,0 +1,7 @@
+[app:main]
+source_dir=/var/www/scielo
+scilista=/var/www/scielo/serial/scilista.lst
+ssh_server=localhost
+ssh_port=21
+ssh_user=anonymous
+ssh_password=anonymous
