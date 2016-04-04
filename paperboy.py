@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+import subprocess
 from utils import settings
 import paramiko
 from paramiko.client import SSHClient
@@ -9,6 +10,7 @@ from paramiko.ssh_exception import AuthenticationException
 logger = logging.getLogger(__name__)
 
 ALLOWED_ITENS = ['serial', 'pdfs', 'images', 'translations']
+
 
 def _config_logging(logging_level='INFO', logging_file=None):
 
@@ -35,6 +37,29 @@ def _config_logging(logging_level='INFO', logging_file=None):
     logger.addHandler(hl)
 
     return logger
+
+
+def master_conversor(mst_input, mst_output):
+
+    logger.debug(u'Realizando conversão de bases para %s' % mst_input)
+
+    status = '1'  # erro de acordo com stdout do CISIS
+
+    try:
+        status = subprocess.call(['crunchmf', mst_input, mst_output])
+    except OSError as e:
+        logger.error(u'Erro ao executar crunchmf, verifique se o comando esta no syspath, ou se o path do cisis foi indicado corretamente no arquivo de configuração')
+
+    if status == '0':
+        logger.debug(u'Conversão realizada para %s' % mst_input)
+        return True
+
+    if status == '1':
+        logger.error(u'Conversão não funcionou para %s' % mst_input)
+        return False
+
+    return False
+
 
 def parse_scilista(scilista):
 
@@ -66,20 +91,23 @@ def parse_scilista(scilista):
 
     return lista
 
+
 def remove_last_slash(path):
     path = path.replace('\\', '/')
 
     return path[:-1] if path[-1] == '/' else path
 
+
 class Delivery(object):
 
     def __init__(self, source_type, scilista, source_dir, destiny_dir,
-        ssh_server, ssh_port, ssh_user, ssh_password):
+            compatibility_mode, ssh_server, ssh_port, ssh_user, ssh_password):
 
         self._scilista = parse_scilista(scilista)
         self.source_type = source_type
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
+        self.compatibility_mode = compatibility_mode
         self.ssh_server = ssh_server
         self.ssh_port = ssh_port
         self.ssh_user = ssh_user
@@ -87,12 +115,16 @@ class Delivery(object):
         self.sftp_client = self._sftp_client()
 
     def _sftp_client(self):
-        
-        logger.info(u'Conectando via SSH ao servidor (%s:%s)' % (self.ssh_server, self.ssh_port))
+
+        logger.info(u'Conectando via SSH ao servidor (%s:%s)' % (
+            self.ssh_server, self.ssh_port)
+        )
 
         try:
             self.ssh_client = SSHClient()
-            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh_client.set_missing_host_key_policy(
+                paramiko.AutoAddPolicy()
+            )
             self.ssh_client.connect(
                 self.ssh_server,
                 username=self.ssh_user,
@@ -115,7 +147,9 @@ class Delivery(object):
                 self.sftp_client.listdir(path)
                 logger.warning(u'Diretório já existe (%s)' % path)
             except IOError as e:
-                logger.error(u'Falha ao criar diretório (%s): %s' % (path, e.strerror))
+                logger.error(u'Falha ao criar diretório (%s): %s' % (
+                    path, e.strerror)
+                )
                 raise(e)
 
     def _chdir(self, path):
@@ -125,7 +159,9 @@ class Delivery(object):
         try:
             self.sftp_client.chdir(path)
         except IOError as e:
-            logger.error(u'Falha ao acessar diretório (%s): %s' % (path, e.strerror))
+            logger.error(u'Falha ao acessar diretório (%s): %s' % (
+                path, e.strerror)
+            )
             raise(e)
 
     def _put(self, from_fl, to_fl):
@@ -139,13 +175,14 @@ class Delivery(object):
             self.sftp_client.put(from_fl, to_fl)
             logger.debug(u'Arquivo copiado (%s)' % to_fl)
         except IOError as e:
-            logger.error(u'Falha ao copiar arquivo (%s): %s' % (to_fl, e.strerror))
-
+            logger.error(u'Falha ao copiar arquivo (%s): %s' % (
+                to_fl, e.strerror)
+            )
 
     def transfer_data_general(self, base_path):
 
         # Cria a estrutura de diretório informada em base_path dentro de destiny_dir
-        path = ''        
+        path = ''
         for item in base_path.split('/'):
             path += '/' + item
             self._mkdir(self.destiny_dir + path)
@@ -165,8 +202,7 @@ class Delivery(object):
             for directory in dirs:
                 self._mkdir(self.destiny_dir + '/' + current + '/' + directory)
 
-
-    def transfer_data_databases(self, base_path, compatibility_mode=False):
+    def transfer_data_databases(self, base_path):
         """
         base_path: directory inside the source path that will be transfered.
         ex: serial/rsap img/revistas/rsap
@@ -177,27 +213,44 @@ class Delivery(object):
         convert the files to windown compatible files. The default is false.
         """
 
-        allowed_extensions = ['mst', 'xrf', 'lst', 'fst']
+        allowed_extensions = ['mst', 'xrf']
 
         # Cria a estrutura de diretório informada em base_path dentro de destiny_dir
-        path = ''        
+        path = ''
         for item in base_path.split('/'):
             path += '/' + item
             self._mkdir(self.destiny_dir + path)
 
         # Cria recursivamente todo conteúdo baixo o source_dir + base_path
         tree = os.walk(self.source_dir + '/' + base_path)
+        converted = set()
         for item in tree:
             current = item[0].replace(self.source_dir+'/', '')
             dirs = item[1]
             files = item[2]
 
             for fl in files:
+                if not fl[-3:].lower() in allowed_extensions:
+                    continue
                 from_fl = item[0] + '/' + fl
+                from_fl_name = from_fl[:-4]
+                converted_fl = from_fl_name + '_converted'
                 to_fl = self.destiny_dir + '/' + current + '/' + fl
 
-                if not to_fl[-3:].lower() in allowed_extensions:
+                if not self.compatibility_mode:
+                    self._put(from_fl, to_fl)
                     continue
+
+                if from_fl_name in converted:
+                    continue
+
+                converted.add(from_fl_name)
+                convertion_status = master_conversor(from_fl_name, converted_fl)
+                if not convertion_status:
+                    continue
+                if convertion_status:
+                    from_fl = converted_fl
+
                 self._put(from_fl, to_fl)
 
             for directory in dirs:
@@ -232,7 +285,7 @@ class Delivery(object):
 
         if not self.sftp_client:
             return None
-        
+
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -251,7 +304,7 @@ class Delivery(object):
 
         if not self.sftp_client:
             return None
-        
+
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -270,7 +323,7 @@ class Delivery(object):
 
         if not self.sftp_client:
             return None
-        
+
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -289,7 +342,7 @@ class Delivery(object):
 
         if not self.sftp_client:
             return None
-        
+
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -337,7 +390,7 @@ def main():
     parser.add_argument(
         '--source_type',
         '-t',
-        choices=['pdf','images','translations','xmls','databases'],
+        choices=['pdf', 'images', 'translations', 'xmls', 'databases'],
         help=u'tipo de dados que será enviado para o servidor'
     )
 
@@ -361,6 +414,13 @@ def main():
         default=setts.get('destiny_dir', '.'),
         help=u'caminho absoluto onde esta instalado o site scielo, contendo os diretórios, bases, htdocs, proc e serial.'
     )
+
+    parser.add_argument(
+        '--compatibility_mode',
+        '-m',
+        action='store_true',
+        help=u'Ativar modo de compatibilidade entre sistemas operacionais. É necessário ter o CISIS de origem dos dados configurado no syspath ou no arquivo de configuração'
+        )
 
     parser.add_argument(
         '--ssh_server',
@@ -412,6 +472,7 @@ def main():
         args.scilista,
         args.source_dir,
         args.destiny_dir,
+        args.compatibility_mode,
         args.ssh_server,
         args.ssh_port,
         args.ssh_user,
