@@ -411,7 +411,7 @@ class Delivery(object):
         elif source_type == 'databases':
             self.run_serial()
         elif source_type == 'xmls':
-            self.run_serial()
+            self.run_xmls()
         else:
             self.run_serial()
             self.run_images()
