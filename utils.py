@@ -1,11 +1,14 @@
 #coding: utf-8
 import os
 import weakref
+import logging
 
 try:
     from configparser import ConfigParser
 except:
     from ConfigParser import ConfigParser
+
+logger = logging.getLogger(__name__)
 
 
 class SingletonMixin(object):
@@ -49,9 +52,10 @@ class Configuration(SingletonMixin):
     @classmethod
     def from_env(cls):
         try:
-            filepath =  os.environ['PAPERBOY_SETTINGS_FILE']
+            filepath = os.environ['PAPERBOY_SETTINGS_FILE']
         except KeyError:
-            raise ValueError('missing env variable PAPERBOY_SETTINGS_FILE')
+            logger.warning('missing env variable PAPERBOY_SETTINGS_FILE, no presets available')
+            return {}
 
         return cls.from_file(filepath)
 
