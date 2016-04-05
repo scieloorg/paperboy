@@ -360,7 +360,10 @@ class Delivery(object):
             if item[2]:
                 continue
 
-            logger.info(u'Copiando imagens de %s %s' % (journal_acronym, issue_label))
+            logger.info(u'Copiando imagens de %s %s' % (
+                journal_acronym, issue_label)
+            )
+
             self.transfer_data_general('htdocs/img/revistas/%s/%s' % (
                 journal_acronym, issue_label)
             )

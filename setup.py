@@ -9,7 +9,7 @@ tests_require = [
 ]
 
 setup(
-    name="Envia Dados SciELO",
+    name="Paperboy SciELO",
     version="0.1.0",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
@@ -30,8 +30,9 @@ setup(
     tests_require=tests_require,
     test_suite='tests',
     install_requires=install_requires,
-    entry_points="""
-    [console_scripts]
-    send_data=paperboy:main
-    """
+    entry_points={
+        'console_scripts': [
+            'send_data=paperboy:main'
+        ]
+    }
 )
