@@ -353,7 +353,7 @@ class Delivery(object):
                 continue
 
             logger.info(u'Copiando traduções de %s %s' % (journal_acronym, issue_label))
-            self.transfer_data_general('bases/translations/%s/%s' % (
+            self.transfer_data_general('bases/translation/%s/%s' % (
                 journal_acronym, issue_label)
             )
 
@@ -402,7 +402,7 @@ class Delivery(object):
 
         source_type = source_type if source_type else self.source_type
 
-        if source_type == 'pdf':
+        if source_type == 'pdfs':
             self.run_pdfs()
         elif source_type == 'images':
             self.run_images()
@@ -431,7 +431,7 @@ def main():
     parser.add_argument(
         '--source_type',
         '-t',
-        choices=['pdf', 'images', 'translations', 'xmls', 'databases'],
+        choices=['pdfs', 'images', 'translations', 'xmls', 'databases'],
         help=u'tipo de dados que será enviado para o servidor'
     )
 
