@@ -196,14 +196,14 @@ class Delivery(object):
                 to_fl, e.strerror)
             )
 
-    def _remove(self, path):
+    def _local_remove(self, path):
 
         logger.info(u'Removendo arquivo temporário (%s)' % path)
 
         try:
-            self.sftp_client.remove(path)
+            os.remove(path)
             logger.debug(u'Arquivo temporário removido (%s)' % path)
-        except IOError as e:
+        except OSError as e:
             logger.error(u'Falha ao remover arquivo temporário (%s): %s' % (
                 path, e.strerror)
             )
@@ -286,9 +286,10 @@ class Delivery(object):
                 if convertion_status:
                     from_fl = converted_fl
 
+                to_fl = to_fl[:-4]
                 for extension in allowed_extensions:
                     self._put(from_fl + '.' + extension, to_fl + '.' + extension)
-                    self._remove(from_fl + '.' + extension)
+                    self._local_remove(from_fl + '.' + extension)
 
             for directory in dirs:
                 self._mkdir(self.destiny_dir + '/' + current + '/' + directory)
