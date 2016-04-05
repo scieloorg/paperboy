@@ -66,7 +66,12 @@ class Configuration(SingletonMixin):
 
         ``filepath`` is a text string.
         """
-        fp = open(filepath, 'r')
+
+        try:
+            fp = open(filepath, 'r')
+        except IOError:
+            logger.warning('file defined on PAPERBOY_SETTINGS_FILE environment variable not found (%s), no presets available' % filepath)
+            return {}
 
         return cls(fp)
 
