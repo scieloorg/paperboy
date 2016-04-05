@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 import subprocess
-from utils import settings
+from paperboy.utils import settings
 import paramiko
 from paramiko.client import SSHClient
 from paramiko.ssh_exception import AuthenticationException
