@@ -30,11 +30,11 @@ config.ini::
 
 Criar variável de ambiente indicando o arquivo de configuração
 
-**Linux**
+Linux
 
     export PAPERBOY_SETTINGS_FILE=config.ini
 
-**Windows**
+Windows
 
     set PAPERBOY_SETTINGS_FILE=config.ini
 
