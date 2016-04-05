@@ -6,7 +6,7 @@ import subprocess
 from paperboy.utils import settings
 import paramiko
 from paramiko.client import SSHClient
-from paramiko.ssh_exception import AuthenticationException
+from paramiko import ssh_exception
 
 logger = logging.getLogger(__name__)
 
@@ -69,28 +69,34 @@ def parse_scilista(scilista):
     logger.info(u'Carregando scilista (%s)' % scilista)
 
     lista = []
-    with open(scilista, 'r') as f:
-        count = 0
-        for line in f:
-            line = line.strip()
-            count += 1
-            splited_line = [i.strip().lower() for i in line.split(' ')]
 
-            if len(splited_line) > 3 or len(splited_line) < 2:
-                logger.warning(u'Valor errado no arquivo (%s) linha (%d): %s' % (
-                    scilista, count, line))
-                continue
+    try:
+        f = open(scilista, 'r')
+    except IOError:
+        logger.error('Falha ao carregar scilista, arquivo não encontrado (%s)' % scilista)
+    else:
+        with f:
+            count = 0
+            for line in f:
+                line = line.strip()
+                count += 1
+                splited_line = [i.strip().lower() for i in line.split(' ')]
 
-            if len(splited_line) == 3:  # issue to remove
-                if splited_line[2].lower() == 'del':
-                    lista.append((splited_line[0],splited_line[1], True))
-                else:
-                    lista.append((splited_line[0],splited_line[1], False))
+                if len(splited_line) > 3 or len(splited_line) < 2:
+                    logger.warning(u'Valor errado no arquivo (%s) linha (%d): %s' % (
+                        scilista, count, line))
+                    continue
 
-            if len(splited_line) == 2:  # issue to remove
-                lista.append((splited_line[0],splited_line[1], False))
+                if len(splited_line) == 3:  # issue to remove
+                    if splited_line[2].lower() == 'del':
+                        lista.append((splited_line[0], splited_line[1], True))
+                    else:
+                        lista.append((splited_line[0], splited_line[1], False))
 
-    logger.info(u'scilista carregada (%s)' % scilista)
+                if len(splited_line) == 2:  # issue to remove
+                    lista.append((splited_line[0], splited_line[1], False))
+
+        logger.info(u'scilista carregada (%s)' % scilista)
 
     return lista
 
@@ -98,7 +104,10 @@ def parse_scilista(scilista):
 def remove_last_slash(path):
     path = path.replace('\\', '/')
 
-    return path[:-1] if path[-1] == '/' else path
+    try:
+        return path[:-1] if path[-1] == '/' else path
+    except IndexError:
+        return path
 
 
 class Delivery(object):
@@ -134,10 +143,14 @@ class Delivery(object):
                 username=self.ssh_user,
                 password=self.ssh_password
             )
-            return self.ssh_client.open_sftp()
-        except AuthenticationException:
+        except ssh_exception.AuthenticationException:
             logger.error(u'Falha ao conectar ao SSH. Verificar credenciais.')
             return None
+        except ssh_exception.NoValidConnectionsError:
+            logger.error(u'Falha ao conectar ao SSH. Verificar credenciais ou disponibilidade do servidor.')
+            return None
+        else:
+            return self.ssh_client.open_sftp()
 
     def _mkdir(self, path):
 
@@ -451,7 +464,7 @@ def main():
     parser.add_argument(
         '--ssh_port',
         '-x',
-        default=setts.get('ssh_port', '21'),
+        default=setts.get('ssh_port', '22'),
         help=u'FTP port'
     )
 
