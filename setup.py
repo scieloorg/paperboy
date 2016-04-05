@@ -9,7 +9,7 @@ tests_require = [
 ]
 
 setup(
-    name="Paperboy SciELO",
+    name="paperboy",
     version="0.2.0",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
