@@ -32,7 +32,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'send_data=paperboy:main'
+            'paperboy=paperboy:main'
         ]
     }
 )
