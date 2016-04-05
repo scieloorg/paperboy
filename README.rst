@@ -1,7 +1,9 @@
 Paperboy
 ========
 
-Utilitário para envio de dados de sites locais SciELO para servidores SciELO.
+Utilitário para envio de dados de sites locais SciELO para servidores SciELO. O 
+utilitario permite o envio de bases para processamento, images, pdfs, traduções
+e XML's.
 
 Como instalar
 =============
