@@ -210,6 +210,8 @@ class Delivery(object):
 
     def transfer_data_general(self, base_path):
 
+        base_path = base_path.replace('\\', '/')
+
         # Cria a estrutura de diretório informada em base_path dentro de destiny_dir
         path = ''
         for item in base_path.split('/'):
@@ -241,6 +243,8 @@ class Delivery(object):
         linux compatible files. If the source data is on a linux machine it will
         convert the files to windown compatible files. The default is false.
         """
+
+        base_path = base_path.replace('\\', '/')
 
         allowed_extensions = ['mst', 'xrf']
 

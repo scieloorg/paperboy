@@ -12,7 +12,7 @@ tests_require = [
 
 setup(
     name="scielo_paperboy",
-    version="0.3.4",
+    version="0.3.5",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
