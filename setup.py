@@ -21,7 +21,7 @@ setup(
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: SciELO System Admins",
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 2.7",
     ],
