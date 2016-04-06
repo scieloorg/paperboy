@@ -10,18 +10,18 @@ tests_require = [
 
 setup(
     name="scielo_paperboy",
-    version="0.2.3",
+    version="0.3.3",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
     maintainer="Fabio Batalha",
     maintainer_email="fabio.batalha@scielo.org",
-    url="http://github.com/scieloorg/processing",
+    url="http://github.com/scieloorg/paperboy",
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
+        "Intended Audience :: SciELO System Admins",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 2.7",
     ],
