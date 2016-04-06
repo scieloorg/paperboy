@@ -19,6 +19,7 @@ Windows
 1. Instalar as seguintes dependência:
 
     paramiko 1.16.0 ou superior
+
     pycrypto 2.6.1 ou superior
 
 
