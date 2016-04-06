@@ -2,20 +2,23 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-install_requires = []
+install_requires = [
+    "paramiko>=1.16.0"
+]
 
 tests_require = [
-    "paramiko==1.16.0"
+    "paramiko>=1.16.0"
 ]
 
 setup(
     name="scielo_paperboy",
-    version="0.3.3",
+    version="0.3.4",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
     maintainer="Fabio Batalha",
     maintainer_email="fabio.batalha@scielo.org",
+    license="BSD License",
     url="http://github.com/scieloorg/paperboy",
     packages=find_packages(),
     include_package_data=True,
