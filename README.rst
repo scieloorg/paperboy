@@ -8,7 +8,23 @@ e XML's.
 Como instalar
 =============
 
+Linux
+-----
+
 pip install scielo-paperboy
+
+Windows
+-------
+
+1. Instalar as seguintes dependência:
+
+    paramiko 1.16.0 ou superior
+    pycrypto 2.6.1 ou superior
+
+
+2. Instalar Paperboy
+
+    pip install scielo-paperboy
 
 Como utilizar
 =============
