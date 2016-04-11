@@ -1,4 +1,4 @@
-#coding: utf-8
+
 import argparse
 import logging
 import os
@@ -42,23 +42,23 @@ def _config_logging(logging_level='INFO', logging_file=None):
 
 def master_conversor(mst_input, mst_output, cisis_dir=None):
 
-    logger.debug(u'Realizando conversão de bases para %s' % mst_input)
+    logger.debug(u'Running database conversion for %s' % mst_input)
 
     status = '1'  # erro de acordo com stdout do CISIS
 
     command = remove_last_slash(cisis_dir) + '/crunchmf' if cisis_dir else 'crunchmf'
-    logger.debug('Executando: %s' % command)
+    logger.debug('Running: %s' % command)
     try:
         status = subprocess.call([command, mst_input, mst_output])
     except OSError as e:
-        logger.error(u'Erro ao executar crunchmf, verifique se o comando esta no syspath, ou se o path do cisis foi indicado corretamente no arquivo de configuração')
+        logger.error(u'Error while running crunchmf, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
     if str(status) == '0':
-        logger.debug(u'Conversão realizada para %s' % mst_input)
+        logger.debug(u'Conversion done for %s' % mst_input)
         return True
 
     if str(status) == '1':
-        logger.error(u'Conversão não funcionou para %s' % mst_input)
+        logger.error(u'Conversion did not work fot %s' % mst_input)
         return False
 
     return False
@@ -66,14 +66,14 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
 
 def parse_scilista(scilista):
 
-    logger.info(u'Carregando scilista (%s)' % scilista)
+    logger.info(u'Loading scilista (%s)' % scilista)
 
     lista = []
 
     try:
         f = open(scilista, 'r')
     except IOError:
-        logger.error('Falha ao carregar scilista, arquivo não encontrado (%s)' % scilista)
+        logger.error(u'Fail while loading scilista, file not found (%s)' % scilista)
     else:
         with f:
             count = 0
@@ -83,7 +83,7 @@ def parse_scilista(scilista):
                 splited_line = [i.strip().lower() for i in line.split(' ')]
 
                 if len(splited_line) > 3 or len(splited_line) < 2:
-                    logger.warning(u'Valor errado no arquivo (%s) linha (%d): %s' % (
+                    logger.warning(u'Wrong value in the file (%s) line (%d): %s' % (
                         scilista, count, line))
                     continue
 
@@ -96,7 +96,7 @@ def parse_scilista(scilista):
                 if len(splited_line) == 2:  # issue to remove
                     lista.append((splited_line[0], splited_line[1], False))
 
-        logger.info(u'scilista carregada (%s)' % scilista)
+        logger.info(u'scilista loaded (%s)' % scilista)
 
     return lista
 
@@ -129,7 +129,7 @@ class Delivery(object):
 
     def _sftp_client(self):
 
-        logger.info(u'Conectando via SSH ao servidor (%s:%s)' % (
+        logger.info(u'Conecting through SSH to the server (%s:%s)' % (
             self.ssh_server, self.ssh_port)
         )
 
@@ -144,67 +144,67 @@ class Delivery(object):
                 password=self.ssh_password
             )
         except ssh_exception.AuthenticationException:
-            logger.error(u'Falha ao conectar ao SSH. Verificar credenciais.')
+            logger.error(u'Fail while connecting through SSH. Check your creadentials.')
             return None
         except ssh_exception.NoValidConnectionsError:
-            logger.error(u'Falha ao conectar ao SSH. Verificar credenciais ou disponibilidade do servidor.')
+            logger.error(u'Fail while connecting through SSH. Check your credentials or the server availability.')
             return None
         else:
             return self.ssh_client.open_sftp()
 
     def _mkdir(self, path):
 
-        logger.info(u'Criando diretório (%s)' % path)
+        logger.info(u'Creating directory (%s)' % path)
 
         try:
             self.sftp_client.mkdir(path)
-            logger.debug(u'Diretório criado (%s)' % path)
+            logger.debug(u'Directory has being created (%s)' % path)
         except IOError:
             try:
                 self.sftp_client.listdir(path)
-                logger.warning(u'Diretório já existe (%s)' % path)
+                logger.warning(u'Directory already exists (%s)' % path)
             except IOError as e:
-                logger.error(u'Falha ao criar diretório (%s): %s' % (
+                logger.error(u'Fail while creating directory (%s): %s' % (
                     path, e.strerror)
                 )
                 raise(e)
 
     def _chdir(self, path):
 
-        logger.info(u'Mudando para diretório (%s)' % path)
+        logger.info(u'Changing to directory (%s)' % path)
 
         try:
             self.sftp_client.chdir(path)
         except IOError as e:
-            logger.error(u'Falha ao acessar diretório (%s): %s' % (
+            logger.error(u'Fail while accessing directory (%s): %s' % (
                 path, e.strerror)
             )
             raise(e)
 
     def _put(self, from_fl, to_fl):
 
-        logger.info(u'Copiando arquivo de (%s) para (%s)' % (
+        logger.info(u'Copying file from (%s) to (%s)' % (
             from_fl,
             to_fl
         ))
 
         try:
             self.sftp_client.put(from_fl, to_fl)
-            logger.debug(u'Arquivo copiado (%s)' % to_fl)
+            logger.debug(u'File has being copied (%s)' % to_fl)
         except IOError as e:
-            logger.error(u'Falha ao copiar arquivo (%s): %s' % (
+            logger.error(u'Fail while copying file (%s): %s' % (
                 to_fl, e.strerror)
             )
 
     def _local_remove(self, path):
 
-        logger.info(u'Removendo arquivo temporário (%s)' % path)
+        logger.info(u'Removing temporary file (%s)' % path)
 
         try:
             os.remove(path)
-            logger.debug(u'Arquivo temporário removido (%s)' % path)
+            logger.debug(u'Temporary has being file removed (%s)' % path)
         except OSError as e:
-            logger.error(u'Falha ao remover arquivo temporário (%s): %s' % (
+            logger.error(u'Fail while removing temporary file (%s): %s' % (
                 path, e.strerror)
             )
 
@@ -212,21 +212,22 @@ class Delivery(object):
 
         base_path = base_path.replace('\\', '/')
 
-        # Cria a estrutura de diretório informada em base_path dentro de destiny_dir
+        # Cria a estrutura de diretorio informada em base_path dentro de destiny_dir
         path = ''
         for item in base_path.split('/'):
             path += '/' + item
             self._mkdir(self.destiny_dir + path)
 
-        # Cria recursivamente todo conteúdo baixo o source_dir + base_path
+        # Cria recursivamente todo conteudo baixo o source_dir + base_path
         tree = os.walk(self.source_dir + '/' + base_path)
         for item in tree:
-            current = item[0].replace(self.source_dir+'/', '')
+            root = item[0].replace('\\', '/')
+            current = root.replace(self.source_dir+'/', '')
             dirs = item[1]
             files = item[2]
 
             for fl in files:
-                from_fl = item[0] + '/' + fl
+                from_fl = root + '/' + fl
                 to_fl = self.destiny_dir + '/' + current + '/' + fl
                 self._put(from_fl, to_fl)
 
@@ -248,24 +249,25 @@ class Delivery(object):
 
         allowed_extensions = ['mst', 'xrf']
 
-        # Cria a estrutura de diretório informada em base_path dentro de destiny_dir
+        # Cria a estrutura de diretorio informada em base_path dentro de destiny_dir
         path = ''
         for item in base_path.split('/'):
             path += '/' + item
             self._mkdir(self.destiny_dir + path)
 
-        # Cria recursivamente todo conteúdo baixo o source_dir + base_path
+        # Cria recursivamente todo conteudo baixo o source_dir + base_path
         tree = os.walk(self.source_dir + '/' + base_path)
         converted = set()
         for item in tree:
-            current = item[0].replace(self.source_dir+'/', '')
+            root = item[0].replace('\\', '/')
+            current = root.replace(self.source_dir+'/', '')
             dirs = item[1]
             files = item[2]
 
             for fl in files:
                 if not fl[-3:].lower() in allowed_extensions:
                     continue
-                from_fl = item[0] + '/' + fl
+                from_fl = root + '/' + fl
                 from_fl_name = from_fl[:-4]
                 converted_fl = from_fl_name + '_converted'
                 to_fl = self.destiny_dir + '/' + current + '/' + fl
@@ -303,10 +305,10 @@ class Delivery(object):
         if not self.sftp_client:
             return None
 
-        logger.info('Copiando base issue')
+        logger.info(u'Copying issue database')
         self.transfer_data_databases('serial/issue')
 
-        logger.info('Copiando base title')
+        logger.info(u'Copying title database')
         self.transfer_data_databases('serial/title')
 
         for item in self._scilista:
@@ -314,11 +316,11 @@ class Delivery(object):
             issue_label = item[1]
             to_remove = item[2]
 
-            # pulando itens do scilista indicados para exclusão, ex: rsap v12n3 del
+            # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copiando bases de %s %s' % (journal_acronym, issue_label))
+            logger.info(u'Copying databases from %s %s' % (journal_acronym, issue_label))
             self.transfer_data_databases('serial/%s/%s/base' % (
                 journal_acronym, issue_label)
             )
@@ -333,11 +335,11 @@ class Delivery(object):
             issue_label = item[1]
             to_remove = item[2]
 
-            # pulando itens do scilista indicados para exclusão, ex: rsap v12n3 del
+            # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copiando pdfs de %s %s' % (journal_acronym, issue_label))
+            logger.info(u'Copying pdf\'s from %s %s' % (journal_acronym, issue_label))
             self.transfer_data_general('bases/pdf/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -352,11 +354,11 @@ class Delivery(object):
             issue_label = item[1]
             to_remove = item[2]
 
-            # pulando itens do scilista indicados para exclusão, ex: rsap v12n3 del
+            # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copiando traduções de %s %s' % (journal_acronym, issue_label))
+            logger.info(u'Copying translations from %s %s' % (journal_acronym, issue_label))
             self.transfer_data_general('bases/translation/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -371,11 +373,11 @@ class Delivery(object):
             issue_label = item[1]
             to_remove = item[2]
 
-            # pulando itens do scilista indicados para exclusão, ex: rsap v12n3 del
+            # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copiando xmls de %s %s' % (journal_acronym, issue_label))
+            logger.info(u'Copying xmls from %s %s' % (journal_acronym, issue_label))
             self.transfer_data_general('bases/xml/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -390,11 +392,11 @@ class Delivery(object):
             issue_label = item[1]
             to_remove = item[2]
 
-            # pulando itens do scilista indicados para exclusão, ex: rsap v12n3 del
+            # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copiando imagens de %s %s' % (
+            logger.info(u'Copying images from %s %s' % (
                 journal_acronym, issue_label)
             )
 
@@ -429,91 +431,91 @@ def main():
     setts = settings.get('app:main', {})
 
     parser = argparse.ArgumentParser(
-        description=u'Utilitário para envio de Imagens, PDF\'s, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção'
+        description='Tools to send images, PDF\'s, translations and databases from the local SciELO sites to the stage and production servers'
     )
 
     parser.add_argument(
-        '--source_type',
-        '-t',
-        choices=['pdfs', 'images', 'translations', 'xmls', 'databases'],
-        help=u'tipo de dados que será enviado para o servidor'
+        u'--source_type',
+        u'-t',
+        choices=[u'pdfs', u'images', u'translations', u'xmls', u'databases'],
+        help=u'Type of data that will be send to the server'
     )
 
     parser.add_argument(
-        '--cisis_dir',
-        '-r',
-        default=setts.get('cisis_dir', ''),
-        help=u'path absoluto para o local onde estão instalados os utilitários ISIS. Caso o utilitário esteja no syspath, não será necessário informar esse dado.'
+        u'--cisis_dir',
+        u'-r',
+        default=setts.get(u'cisis_dir', u''),
+        help=u'absolute path to the source where the ISIS utilitaries are where installed. It is not necessary to informe when the utiliaries are in the syspath.'
     )
 
     parser.add_argument(
-        '--scilista',
-        '-i',
-        default=setts.get('scilista', './serial/scilista.lst'),
-        help=u'caminho absoluto para o arquivo scilista.lst'
+        u'--scilista',
+        u'-i',
+        default=setts.get(u'scilista', u'./serial/scilista.lst'),
+        help=u'absolute path to the scilista.lst file'
     )
 
     parser.add_argument(
-        '--source_dir',
-        '-s',
-        default=setts.get('source_dir', '.'),
-        help=u'caminho absoluto onde esta instalado o site scielo, contendo os diretórios, bases, htdocs, proc e serial.'
+        u'--source_dir',
+        u'-s',
+        default=setts.get(u'source_dir', u'.'),
+        help=u'absolute path where the SciELO site was installed. this directory must contain the directories bases, htcos, proc and serial'
     )
 
     parser.add_argument(
-        '--destiny_dir',
-        '-d',
-        default=setts.get('destiny_dir', '.'),
-        help=u'caminho absoluto onde esta instalado o site scielo, contendo os diretórios, bases, htdocs, proc e serial.'
+        u'--destiny_dir',
+        u'-d',
+        default=setts.get(u'destiny_dir', u'.'),
+        help=u'absolute path (server site) where the SciELO site was installed. this directory must contain the directories bases, htcos, proc and serial'
     )
 
     parser.add_argument(
-        '--compatibility_mode',
-        '-m',
-        action='store_true',
-        help=u'Ativar modo de compatibilidade entre sistemas operacionais. É necessário ter o CISIS de origem dos dados configurado no syspath ou no arquivo de configuração'
+        u'--compatibility_mode',
+        u'-m',
+        action=u'store_true',
+        help=u'Activate the compatibility mode between operating systems. It is necessary to have the CISIS configured in the syspath or in the configuration file'
         )
 
     parser.add_argument(
-        '--ssh_server',
-        '-f',
-        default=setts.get('ssh_server', 'localhost'),
+        u'--ssh_server',
+        u'-f',
+        default=setts.get(u'ssh_server', u'localhost'),
         help=u'FTP'
     )
 
     parser.add_argument(
-        '--ssh_port',
-        '-x',
-        default=setts.get('ssh_port', '22'),
+        u'--ssh_port',
+        u'-x',
+        default=setts.get(u'ssh_port', u'22'),
         help=u'FTP port'
     )
 
     parser.add_argument(
-        '--ssh_user',
-        '-u',
-        default=setts.get('ssh_user', 'anonymous'),
-        help=u'Usuário do ftp'
+        u'--ssh_user',
+        u'-u',
+        default=setts.get(u'ssh_user', u'anonymous'),
+        help=u'FTP username'
     )
 
     parser.add_argument(
-        '--ssh_password',
-        '-p',
-        default=setts.get('ssh_password', 'anonymous'),
-        help=u'Senha do ftp'
+        u'--ssh_password',
+        u'-p',
+        default=setts.get(u'ssh_password', u'anonymous'),
+        help=u'FTP password'
     )
 
     parser.add_argument(
-        '--logging_file',
-        '-o',
-        help=u'Caminho completo para o arquivo de logs'
+        u'--logging_file',
+        u'-o',
+        help=u'absolute path to the log file'
     )
 
     parser.add_argument(
-        '--logging_level',
-        '-l',
-        default='DEBUG',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-        help=u'Nível de log'
+        u'--logging_level',
+        u'-l',
+        default=u'DEBUG',
+        choices=[u'DEBUG', u'INFO', u'WARNING', u'ERROR', u'CRITICAL'],
+        help=u'Log level'
     )
 
     args = parser.parse_args()
