@@ -116,6 +116,7 @@ class Delivery(object):
             compatibility_mode, ssh_server, ssh_port, ssh_user, ssh_password):
 
         self._scilista = parse_scilista(scilista)
+        self.scilista = scilista
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_type = source_type
         self.source_dir = remove_last_slash(source_dir)
@@ -304,6 +305,9 @@ class Delivery(object):
 
         if not self.sftp_client:
             return None
+
+        logger.info(u'Copying scilista.lst file')
+        self._put(self.scilista, self.destiny_dir + '/serial/scilist.lst')
 
         logger.info(u'Copying issue database')
         self.transfer_data_databases('serial/issue')
