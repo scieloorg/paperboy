@@ -12,7 +12,7 @@ tests_require = [
 
 setup(
     name="scielo_paperboy",
-    version="0.3.9",
+    version="0.4.9",
     description="Utilitário para envio de Imagens, PDF's, Traducões e Bases de sites locais SciELO para os servidores de homologação e produção",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
@@ -35,7 +35,9 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'paperboy=paperboy:main'
+            'paperboy=send_to_server:main',
+            'paperboy_delivery_to_server=send_to_server:main',
+            'paperboy_delivery_to_scielo=send_to_scielo:main'
         ]
     }
 )
