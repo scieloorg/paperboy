@@ -126,7 +126,18 @@ class Delivery(object):
         self.ssh_port = ssh_port
         self.ssh_user = ssh_user
         self.ssh_password = ssh_password
-        self.sftp_client = self._sftp_client()
+        self.ssh_client = None
+        self._active_sftp_client = None
+
+    @property
+    def sftp_client(self):
+
+        if self.ssh_client and self.ssh_client.get_transport().is_active():
+            return self._active_sftp_client
+
+        self._active_sftp_client = self._sftp_client()
+
+        return self._active_sftp_client
 
     def _sftp_client(self):
 
@@ -142,7 +153,8 @@ class Delivery(object):
             self.ssh_client.connect(
                 self.ssh_server,
                 username=self.ssh_user,
-                password=self.ssh_password
+                password=self.ssh_password,
+                compress=True
             )
         except ssh_exception.AuthenticationException:
             logger.error(u'Fail while connecting through SSH. Check your creadentials.')
@@ -303,9 +315,6 @@ class Delivery(object):
 
     def run_serial(self):
 
-        if not self.sftp_client:
-            return None
-
         logger.info(u'Copying scilista.lst file')
         self._put(self.scilista, self.destiny_dir + '/serial/scilist.lst')
 
@@ -331,9 +340,6 @@ class Delivery(object):
 
     def run_pdfs(self):
 
-        if not self.sftp_client:
-            return None
-
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -349,9 +355,6 @@ class Delivery(object):
             )
 
     def run_translations(self):
-
-        if not self.sftp_client:
-            return None
 
         for item in self._scilista:
             journal_acronym = item[0]
@@ -369,9 +372,6 @@ class Delivery(object):
 
     def run_xmls(self):
 
-        if not self.sftp_client:
-            return None
-
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
@@ -387,9 +387,6 @@ class Delivery(object):
             )
 
     def run_images(self):
-
-        if not self.sftp_client:
-            return None
 
         for item in self._scilista:
             journal_acronym = item[0]
