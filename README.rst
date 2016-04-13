@@ -57,24 +57,27 @@ Windows
 
     set PAPERBOY_SETTINGS_FILE=config.ini
 
-Executar
+Utilitários disponíveis
 
-    paperboy
+    * paperboy_delivery_to_server
+    * paperboy_delivery_to_scielo
 
 Para ajuda
 
-    paperboy --help
+    paperboy_delivery_to_server --help
+    paperboy_delivery_to_scielo --help
 
-Para ativar módulo de compatibilidade de bases. O modulo de compatibilidade
+Para ativar módulo de compatibilidade de bases no utilitário **paperboy_delivery_to_server**. O modulo de compatibilidade
 converte as bases de dados para que sejam compatíveis com o sistema operacional
 de destino. Deve ser utilizado quando o objetivo é enviar bases do Windows para
 o Linux ou o contrário.
 
-    paperboy -m
+    paperboy_delivery_to_server -m
 
 Sem arquivo de configuração
 ---------------------------
 
 Executar
 
-    paperboy --help
+    paperboy_delivery_to_scielo --help
+    paperboy_delivery_to_server --help
