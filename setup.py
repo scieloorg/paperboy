@@ -35,9 +35,9 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'paperboy=send_to_server:main',
-            'paperboy_delivery_to_server=send_to_server:main',
-            'paperboy_delivery_to_scielo=send_to_scielo:main'
+            'paperboy=paperboy.send_to_server:main',
+            'paperboy_delivery_to_server=paperboy.send_to_server:main',
+            'paperboy_delivery_to_scielo=paperboy.send_to_scielo:main'
         ]
     }
 )
