@@ -59,12 +59,13 @@ Windows
 
 Utilitários disponíveis
 
-    * paperboy_delivery_to_server
-    * paperboy_delivery_to_scielo
+* paperboy_delivery_to_server
+* paperboy_delivery_to_scielo
 
 Para ajuda
 
     paperboy_delivery_to_server --help
+    
     paperboy_delivery_to_scielo --help
 
 Para ativar módulo de compatibilidade de bases no utilitário **paperboy_delivery_to_server**. O modulo de compatibilidade
@@ -80,4 +81,5 @@ Sem arquivo de configuração
 Executar
 
     paperboy_delivery_to_scielo --help
+
     paperboy_delivery_to_server --help
