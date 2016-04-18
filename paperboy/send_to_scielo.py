@@ -7,6 +7,7 @@ from paperboy.utils import settings
 import paramiko
 from paramiko.client import SSHClient
 from paramiko import ssh_exception
+from communicator import SFTP, FTP
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
     logger.debug('Running: %s' % ' '.join(command))
     try:
         status = subprocess.call(command)
+        status.wait()
     except OSError as e:
         logger.error(u'Error while running mx, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
@@ -88,6 +90,7 @@ def make_section_catalog_report(source_dir, cisis_dir):
 
     try:
         status = subprocess.Popen(command, shell=True)
+        status.wait()
     except OSError as e:
         logger.error(u'Error while creating report, static_section_catalog.txt was not updated')
 
@@ -112,9 +115,9 @@ def make_static_file_report(source_dir, report):
     )
 
     logger.debug('Running: %s' % command)
-
     try:
         status = subprocess.Popen(command, shell=True)
+        status.wait()
     except OSError as e:
         logger.error(u'Error while creating report, static_%s_files.txt was not updated' % report_name)
 
@@ -131,66 +134,30 @@ def remove_last_slash(path):
 
 class Delivery(object):
 
-    def __init__(self, source_type, cisis_dir, source_dir, destiny_dir, ssh_server,
-                 ssh_port, ssh_user, ssh_password):
+    def __init__(self, source_type, cisis_dir, source_dir, destiny_dir, server,
+                 port, user, password):
 
         self.source_type = source_type
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
-        self.ssh_server = ssh_server
-        self.ssh_port = ssh_port
-        self.ssh_user = ssh_user
-        self.ssh_password = ssh_password
-        self.ssh_client = None
-        self._active_sftp_client = None
-
-    @property
-    def sftp_client(self):
-
-        if self.ssh_client and self.ssh_client.get_transport().is_active():
-            return self._active_sftp_client
-
-        self._active_sftp_client = self._sftp_client()
-
-        return self._active_sftp_client
-
-    def _sftp_client(self):
-
-        logger.info(u'Conecting through SSH to the server (%s:%s)' % (
-            self.ssh_server, self.ssh_port)
-        )
-
-        try:
-            self.ssh_client = SSHClient()
-            self.ssh_client.set_missing_host_key_policy(
-                paramiko.AutoAddPolicy()
-            )
-            self.ssh_client.connect(
-                self.ssh_server,
-                username=self.ssh_user,
-                password=self.ssh_password,
-                compress=True
-            )
-        except ssh_exception.AuthenticationException:
-            logger.error(u'Fail while connecting through SSH. Check your creadentials.')
-            return None
-        except ssh_exception.NoValidConnectionsError:
-            logger.error(u'Fail while connecting through SSH. Check your credentials or the server availability.')
-            return None
+        if str(port) == '22':
+            self.client = SFTP(server, int(port), user, password)
+        elif str(port) == '21': 
+            self.client = FTP(server, int(port), user, password)
         else:
-            return self.ssh_client.open_sftp()
+            raise TypeError('port must be 21 for ftp or 22 for sftp')
 
     def _mkdir(self, path):
 
         logger.info(u'Creating directory (%s)' % path)
 
         try:
-            self.sftp_client.mkdir(path)
+            self.client.mkdir(path)
             logger.debug(u'Directory has being created (%s)' % path)
         except IOError:
             try:
-                self.sftp_client.listdir(path)
+                self.client.listdir(path)
                 logger.warning(u'Directory already exists (%s)' % path)
             except IOError as e:
                 logger.error(u'Fail while creating directory (%s): %s' % (
@@ -203,7 +170,7 @@ class Delivery(object):
         logger.info(u'Changing to directory (%s)' % path)
 
         try:
-            self.sftp_client.chdir(path)
+            self.client.chdir(path)
         except IOError as e:
             logger.error(u'Fail while accessing directory (%s): %s' % (
                 path, e.strerror)
@@ -218,7 +185,7 @@ class Delivery(object):
         ))
 
         try:
-            self.sftp_client.put(from_fl, to_fl)
+            self.client.put(from_fl, to_fl)
             logger.debug(u'File has being copied (%s)' % to_fl)
         except IOError as e:
             logger.error(u'Fail while copying file (%s): %s' % (
@@ -391,31 +358,32 @@ def main():
     )
 
     parser.add_argument(
-        u'--ssh_server',
+        u'--server',
         u'-f',
-        default=setts.get(u'ssh_server', u'localhost'),
-        help=u'FTP'
+        default=setts.get(u'server', u'localhost'),
+        help=u'FTP or SFTP Server'
     )
 
     parser.add_argument(
-        u'--ssh_port',
+        u'--port',
         u'-x',
-        default=setts.get(u'ssh_port', u'22'),
-        help=u'FTP port'
+        default=setts.get(u'port', u'22'),
+        choices=['22','21'],
+        help=u'22 for SFTP connection or 21 for FTP connection'
     )
 
     parser.add_argument(
-        u'--ssh_user',
+        u'--user',
         u'-u',
-        default=setts.get(u'ssh_user', u'anonymous'),
-        help=u'FTP username'
+        default=setts.get(u'user', u'anonymous'),
+        help=u'FTP or SFTP username'
     )
 
     parser.add_argument(
-        u'--ssh_password',
+        u'--password',
         u'-p',
-        default=setts.get(u'ssh_password', u'anonymous'),
-        help=u'FTP password'
+        default=setts.get(u'password', u'anonymous'),
+        help=u'FTP or SFTP password'
     )
 
     parser.add_argument(
@@ -440,10 +408,10 @@ def main():
         args.cisis_dir,
         args.source_dir,
         args.destiny_dir,
-        args.ssh_server,
-        args.ssh_port,
-        args.ssh_user,
-        args.ssh_password
+        args.server,
+        args.port,
+        args.user,
+        args.password
     )
 
     delivery.run()

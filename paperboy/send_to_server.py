@@ -53,6 +53,7 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
     logger.debug('Running: %s' % command)
     try:
         status = subprocess.call([command, mst_input, mst_output])
+        status.wait()
     except OSError as e:
         logger.error(u'Error while running crunchmf, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
@@ -116,7 +117,7 @@ def remove_last_slash(path):
 class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
-            compatibility_mode, ssh_server, ssh_port, ssh_user, ssh_password):
+            compatibility_mode, server, port, user, password):
 
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
@@ -125,8 +126,13 @@ class Delivery(object):
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
         self.compatibility_mode = compatibility_mode
-        #self.client = SFTP(ssh_server, ssh_port, ssh_user, ssh_password)
-        self.client = FTP(ssh_server, ssh_port, ssh_user, ssh_password)
+
+        if str(port) == '22':
+            self.client = SFTP(server, int(port), user, password)
+        elif str(port) == '21': 
+            self.client = FTP(server, int(port), user, password)
+        else:
+            raise TypeError('port must be 21 for ftp or 22 for sftp')
 
     def _local_remove(self, path):
 
@@ -399,31 +405,32 @@ def main():
         )
 
     parser.add_argument(
-        u'--ssh_server',
+        u'--server',
         u'-f',
-        default=setts.get(u'ssh_server', u'localhost'),
-        help=u'FTP'
+        default=setts.get(u'server', u'localhost'),
+        help=u'FTP or SFTP'
     )
 
     parser.add_argument(
-        u'--ssh_port',
+        u'--port',
         u'-x',
-        default=setts.get(u'ssh_port', u'22'),
-        help=u'FTP port'
+        default=setts.get(u'port', u'22'),
+        choices=['22', '21'],
+        help=u'FTP or SFTP port'
     )
 
     parser.add_argument(
-        u'--ssh_user',
+        u'--user',
         u'-u',
-        default=setts.get(u'ssh_user', u'anonymous'),
-        help=u'FTP username'
+        default=setts.get(u'user', u'anonymous'),
+        help=u'FTP or SFTP username'
     )
 
     parser.add_argument(
-        u'--ssh_password',
+        u'--password',
         u'-p',
-        default=setts.get(u'ssh_password', u'anonymous'),
-        help=u'FTP password'
+        default=setts.get(u'password', u'anonymous'),
+        help=u'FTP or SFTP password'
     )
 
     parser.add_argument(
@@ -451,10 +458,10 @@ def main():
         args.source_dir,
         args.destiny_dir,
         args.compatibility_mode,
-        args.ssh_server,
-        args.ssh_port,
-        args.ssh_user,
-        args.ssh_password
+        args.server,
+        args.port,
+        args.user,
+        args.password
     )
 
     delivery.run()
