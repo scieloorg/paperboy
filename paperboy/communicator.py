@@ -35,10 +35,10 @@ class FTP(Communicator):
         logger.info(u'Checking if directory already exists (%s)' % path)
 
         try:
-            stdout = self.client.dir(str(path))
+            stdout = self.client.nlst(str(path))
             logger.debug(u'Directory already exists (%s)' % path)
             return True
-        except:
+        except ftplib.error_perm:
             logger.debug(u'Directory do not exists (%s)' % path)
 
         return False
@@ -51,9 +51,7 @@ class FTP(Communicator):
             self.client.mkd(path)
             logger.debug(u'Directory has being created (%s)' % path)
         except ftplib.error_perm as e:
-            if self.exists_dir(path):
-                logger.warning(u'Directory already exists (%s): %s', path, e.message)
-            else:
+            if not self.exists_dir(path):
                 logger.error(u'Fail while creating directory (%s): %s', path, e.message)
     
     def chdir(self, path):
@@ -75,7 +73,11 @@ class FTP(Communicator):
             to_fl
         ))
 
-        self.client.storbinary('STOR %s' % to_fl , open(from_fl, 'r'))
+        try:
+            self.client.storbinary('STOR %s' % to_fl , open(from_fl, 'r'))
+        except IOError:
+            logger.error(u'File not found (%s)', from_fl)
+
         logger.debug(u'File has being copied (%s)' % to_fl)
 
 class SFTP(Communicator):
