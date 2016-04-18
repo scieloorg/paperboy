@@ -1,44 +1,47 @@
 # coding: utf-8
 import argparse
 import logging
+import logging.config
 import os
 import subprocess
 from paperboy.utils import settings
-import paramiko
-from paramiko.client import SSHClient
-from paramiko import ssh_exception
+from communicator import SFTP, FTP
 
 logger = logging.getLogger(__name__)
 
 ALLOWED_ITENS = ['serial', 'pdfs', 'images', 'translations']
 
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'NOTSET',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'ERROR'
+        },
+        'paperboy': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    }
+}
 
 def _config_logging(logging_level='INFO', logging_file=None):
 
-    allowed_levels = {
-        'DEBUG': logging.DEBUG,
-        'INFO': logging.INFO,
-        'WARNING': logging.WARNING,
-        'ERROR': logging.ERROR,
-        'CRITICAL': logging.CRITICAL
-    }
+    LOGGING['loggers']['paperboy']['level'] = logging_level
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    logger.setLevel(allowed_levels.get(logging_level, 'INFO'))
-
-    if logging_file:
-        hl = logging.FileHandler(logging_file, mode='a')
-    else:
-        hl = logging.StreamHandler()
-
-    hl.setFormatter(formatter)
-    hl.setLevel(allowed_levels.get(logging_level, 'INFO'))
-
-    logger.addHandler(hl)
-
-    return logger
-
+    logging.config.dictConfig(LOGGING)
 
 def master_conversor(mst_input, mst_output, cisis_dir=None):
 
@@ -122,92 +125,8 @@ class Delivery(object):
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
         self.compatibility_mode = compatibility_mode
-        self.ssh_server = ssh_server
-        self.ssh_port = ssh_port
-        self.ssh_user = ssh_user
-        self.ssh_password = ssh_password
-        self.ssh_client = None
-        self._active_sftp_client = None
-
-    @property
-    def sftp_client(self):
-
-        if self.ssh_client and self.ssh_client.get_transport().is_active():
-            return self._active_sftp_client
-
-        self._active_sftp_client = self._sftp_client()
-
-        return self._active_sftp_client
-
-    def _sftp_client(self):
-
-        logger.info(u'Conecting through SSH to the server (%s:%s)' % (
-            self.ssh_server, self.ssh_port)
-        )
-
-        try:
-            self.ssh_client = SSHClient()
-            self.ssh_client.set_missing_host_key_policy(
-                paramiko.AutoAddPolicy()
-            )
-            self.ssh_client.connect(
-                self.ssh_server,
-                username=self.ssh_user,
-                password=self.ssh_password,
-                compress=True
-            )
-        except ssh_exception.AuthenticationException:
-            logger.error(u'Fail while connecting through SSH. Check your creadentials.')
-            return None
-        except ssh_exception.NoValidConnectionsError:
-            logger.error(u'Fail while connecting through SSH. Check your credentials or the server availability.')
-            return None
-        else:
-            return self.ssh_client.open_sftp()
-
-    def _mkdir(self, path):
-
-        logger.info(u'Creating directory (%s)' % path)
-
-        try:
-            self.sftp_client.mkdir(path)
-            logger.debug(u'Directory has being created (%s)' % path)
-        except IOError:
-            try:
-                self.sftp_client.listdir(path)
-                logger.warning(u'Directory already exists (%s)' % path)
-            except IOError as e:
-                logger.error(u'Fail while creating directory (%s): %s' % (
-                    path, e.strerror)
-                )
-                raise(e)
-
-    def _chdir(self, path):
-
-        logger.info(u'Changing to directory (%s)' % path)
-
-        try:
-            self.sftp_client.chdir(path)
-        except IOError as e:
-            logger.error(u'Fail while accessing directory (%s): %s' % (
-                path, e.strerror)
-            )
-            raise(e)
-
-    def _put(self, from_fl, to_fl):
-
-        logger.info(u'Copying file from (%s) to (%s)' % (
-            from_fl,
-            to_fl
-        ))
-
-        try:
-            self.sftp_client.put(from_fl, to_fl)
-            logger.debug(u'File has being copied (%s)' % to_fl)
-        except IOError as e:
-            logger.error(u'Fail while copying file (%s): %s' % (
-                to_fl, e.strerror)
-            )
+        #self.client = SFTP(ssh_server, ssh_port, ssh_user, ssh_password)
+        self.client = FTP(ssh_server, ssh_port, ssh_user, ssh_password)
 
     def _local_remove(self, path):
 
@@ -229,7 +148,7 @@ class Delivery(object):
         path = ''
         for item in base_path.split('/'):
             path += '/' + item
-            self._mkdir(self.destiny_dir + path)
+            self.client.mkdir(self.destiny_dir + path)
 
         # Cria recursivamente todo conteudo baixo o source_dir + base_path
         tree = os.walk(self.source_dir + '/' + base_path)
@@ -242,10 +161,10 @@ class Delivery(object):
             for fl in files:
                 from_fl = root + '/' + fl
                 to_fl = self.destiny_dir + '/' + current + '/' + fl
-                self._put(from_fl, to_fl)
+                self.client.put(from_fl, to_fl)
 
             for directory in dirs:
-                self._mkdir(self.destiny_dir + '/' + current + '/' + directory)
+                self.client.mkdir(self.destiny_dir + '/' + current + '/' + directory)
 
     def transfer_data_databases(self, base_path):
         """
@@ -266,7 +185,7 @@ class Delivery(object):
         path = ''
         for item in base_path.split('/'):
             path += '/' + item
-            self._mkdir(self.destiny_dir + path)
+            self.client.mkdir(self.destiny_dir + path)
 
         # Cria recursivamente todo conteudo baixo o source_dir + base_path
         tree = os.walk(self.source_dir + '/' + base_path)
@@ -286,7 +205,7 @@ class Delivery(object):
                 to_fl = self.destiny_dir + '/' + current + '/' + fl
 
                 if not self.compatibility_mode:
-                    self._put(from_fl, to_fl)
+                    self.client.put(from_fl, to_fl)
                     continue
 
                 if from_fl_name in converted:
@@ -307,16 +226,18 @@ class Delivery(object):
 
                 to_fl = to_fl[:-4]
                 for extension in allowed_extensions:
-                    self._put(from_fl + '.' + extension, to_fl + '.' + extension)
+                    self.client.put(from_fl + '.' + extension, to_fl + '.' + extension)
                     self._local_remove(from_fl + '.' + extension)
 
             for directory in dirs:
-                self._mkdir(self.destiny_dir + '/' + current + '/' + directory)
+                self.client.mkdir(self.destiny_dir + '/' + current + '/' + directory)
 
     def run_serial(self):
 
+        self.client.mkdir(self.destiny_dir + '/serial')
+
         logger.info(u'Copying scilista.lst file')
-        self._put(self.scilista, self.destiny_dir + '/serial/scilist.lst')
+        self.client.put(self.scilista, self.destiny_dir + '/serial/scilist.lst')
 
         logger.info(u'Copying issue database')
         self.transfer_data_databases('serial/issue')
@@ -520,6 +441,7 @@ def main():
     )
 
     args = parser.parse_args()
+
     _config_logging(args.logging_level, args.logging_file)
 
     delivery = Delivery(
