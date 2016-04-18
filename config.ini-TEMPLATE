@@ -2,25 +2,25 @@
 
 ## Full path to the source directory where the SciELO site is installed. It must 
 ## contains the directories proc, bases, htdocs, cgi-bin, serial.
-source_dir=/vagrant/scielo_br
+source_dir=/var/www/scielo
 
 ## Full path to the CISIS utilitaries. It is usually installed on the directory
 ## proc/cisis of the SciELO Site.
-cisis_dir=/vagrant/scielo_br/proc/cisis
+cisis_dir=/var/www/scielo/proc/cisis
 
 ## Full path to the scilista.lst file. It is usually available at the directory
 ## and file serial/scilista.lst
-#scilista=
+#scilista=/var/www/scielo/serial/scilista.lst
 
 ## Full path to the destiny folder in the server side. It is usually the path
 ## to the SciELO Site in the server. When sending data to SciELO is must be 
 ## commented or empty on the FTP will login the user to the correct path.
-#destiny_dir=/home/fabio.batalha
+#destiny_dir=
 
 ## FTP or SFTP credentials
 ## The protocol will be defined by the port [21, 22] where 21 will use the ftp
 ## protocol and 22 will use the SFTP protocol.
-server=ftp.scielo.br
+server=
 port=21
-user=scielo.pe
-password=peru@2006
+user=
+password=

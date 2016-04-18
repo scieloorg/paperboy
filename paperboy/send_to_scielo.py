@@ -60,7 +60,6 @@ def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
     logger.debug('Running: %s' % ' '.join(command))
     try:
         status = subprocess.call(command)
-        status.wait()
     except OSError as e:
         logger.error(u'Error while running mx, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
