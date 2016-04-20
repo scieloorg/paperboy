@@ -3,41 +3,47 @@ import argparse
 import logging
 import os
 import subprocess
-from paperboy.utils import settings
+
 import paramiko
 from paramiko.client import SSHClient
 from paramiko import ssh_exception
-from communicator import SFTP, FTP
+
+from paperboy.utils import settings
+from paperboy.communicator import SFTP, FTP
 
 logger = logging.getLogger(__name__)
 
-
-def _config_logging(logging_level='INFO', logging_file=None):
-
-    allowed_levels = {
-        'DEBUG': logging.DEBUG,
-        'INFO': logging.INFO,
-        'WARNING': logging.WARNING,
-        'ERROR': logging.ERROR,
-        'CRITICAL': logging.CRITICAL
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'NOTSET',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'ERROR'
+        },
+        'paperboy': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
     }
+}
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+def _config_logging(logging_level='INFO'):
 
-    logger.setLevel(allowed_levels.get(logging_level, 'INFO'))
+    LOGGING['loggers']['paperboy']['level'] = logging_level
 
-    if logging_file:
-        hl = logging.FileHandler(logging_file, mode='a')
-    else:
-        hl = logging.StreamHandler()
-
-    hl.setFormatter(formatter)
-    hl.setLevel(allowed_levels.get(logging_level, 'INFO'))
-
-    logger.addHandler(hl)
-
-    return logger
-
+    logging.config.dictConfig(LOGGING)
 
 def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
 
@@ -386,12 +392,6 @@ def main():
     )
 
     parser.add_argument(
-        u'--logging_file',
-        u'-o',
-        help=u'absolute path to the log file'
-    )
-
-    parser.add_argument(
         u'--logging_level',
         u'-l',
         default=u'DEBUG',
@@ -400,7 +400,7 @@ def main():
     )
 
     args = parser.parse_args()
-    _config_logging(args.logging_level, args.logging_file)
+    _config_logging(args.logging_level)
 
     delivery = Delivery(
         args.source_type,

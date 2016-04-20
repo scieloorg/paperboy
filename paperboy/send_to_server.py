@@ -4,8 +4,9 @@ import logging
 import logging.config
 import os
 import subprocess
+
 from paperboy.utils import settings
-from communicator import SFTP, FTP
+from paperboy.communicator import SFTP, FTP
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ LOGGING = {
     }
 }
 
-def _config_logging(logging_level='INFO', logging_file=None):
+def _config_logging(logging_level='INFO'):
 
     LOGGING['loggers']['paperboy']['level'] = logging_level
 
@@ -50,10 +51,9 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
     status = '1'  # erro de acordo com stdout do CISIS
 
     command = remove_last_slash(cisis_dir) + '/crunchmf' if cisis_dir else 'crunchmf'
-    logger.debug('Running: %s' % command)
+    logger.debug('Running: %s %s %s' % (command, mst_input, mst_output))
     try:
         status = subprocess.call([command, mst_input, mst_output])
-        status.wait()
     except OSError as e:
         logger.error(u'Error while running crunchmf, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
@@ -434,12 +434,6 @@ def main():
     )
 
     parser.add_argument(
-        u'--logging_file',
-        u'-o',
-        help=u'absolute path to the log file'
-    )
-
-    parser.add_argument(
         u'--logging_level',
         u'-l',
         default=u'DEBUG',
@@ -449,7 +443,7 @@ def main():
 
     args = parser.parse_args()
 
-    _config_logging(args.logging_level, args.logging_file)
+    _config_logging(args.logging_level)
 
     delivery = Delivery(
         args.source_type,
