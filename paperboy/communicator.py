@@ -166,6 +166,10 @@ class SFTP(Communicator):
         try:
             self.client.put(from_fl, to_fl)
             logger.debug(u'File has being copied (%s)' % to_fl)
+        except OSError as e:
+            logger.error(u'Fail while copying file (%s), file not found',
+                to_fl
+            )
         except IOError as e:
             logger.error(u'Fail while copying file (%s): %s' % (
                 to_fl, e.strerror)

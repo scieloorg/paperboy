@@ -1,6 +1,7 @@
 # coding: utf-8
 import argparse
 import logging
+import logging.config
 import os
 import subprocess
 
@@ -153,50 +154,6 @@ class Delivery(object):
         else:
             raise TypeError(u'port must be 21 for ftp or 22 for sftp')
 
-    def _mkdir(self, path):
-
-        logger.info(u'Creating directory (%s)' % path)
-
-        try:
-            self.client.mkdir(path)
-            logger.debug(u'Directory has being created (%s)' % path)
-        except IOError:
-            try:
-                self.client.listdir(path)
-                logger.warning(u'Directory already exists (%s)' % path)
-            except IOError as e:
-                logger.error(u'Fail while creating directory (%s): %s' % (
-                    path, e.strerror)
-                )
-                raise(e)
-
-    def _chdir(self, path):
-
-        logger.info(u'Changing to directory (%s)' % path)
-
-        try:
-            self.client.chdir(path)
-        except IOError as e:
-            logger.error(u'Fail while accessing directory (%s): %s' % (
-                path, e.strerror)
-            )
-            raise(e)
-
-    def _put(self, from_fl, to_fl):
-
-        logger.info(u'Copying file from (%s) to (%s)' % (
-            from_fl,
-            to_fl
-        ))
-
-        try:
-            self.client.put(from_fl, to_fl)
-            logger.debug(u'File has being copied (%s)' % to_fl)
-        except IOError as e:
-            logger.error(u'Fail while copying file (%s): %s' % (
-                to_fl, e.strerror)
-            )
-
     def _local_remove(self, path):
 
         logger.info(u'Removing temporary file (%s)' % path)
@@ -223,7 +180,7 @@ class Delivery(object):
             self.source_dir + u'/bases/title/title.iso',
             self.cisis_dir
         )
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/title/title.iso',
             self.destiny_dir + u'/title.iso'
         )
@@ -234,7 +191,7 @@ class Delivery(object):
             self.source_dir + u'/bases/issue/issue.iso',
             self.cisis_dir
         )
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/issue/issue.iso',
             self.destiny_dir + u'/issue.iso'
         )
@@ -246,7 +203,7 @@ class Delivery(object):
             self.cisis_dir,
             u'TP=I'
         )
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/issue/issues.iso',
             self.destiny_dir + u'/issues.iso'
         )
@@ -259,7 +216,7 @@ class Delivery(object):
             u'TP=H',
             u'''"proc='d91<91 0>',ref(mfn-1,v91),'</91>'"'''
         )
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/artigo/artigo.iso',
             self.destiny_dir + u'/artigo.iso'
         )
@@ -271,7 +228,7 @@ class Delivery(object):
             self.cisis_dir,
             u'TP=C'
         )
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/artigo/bib4cit.iso',
             self.destiny_dir + u'/bib4cit.iso'
         )
@@ -293,22 +250,22 @@ class Delivery(object):
         """
 
         make_static_file_report(self.source_dir, u'pdf')
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/reports/static_pdf_files.txt',
             self.destiny_dir + u'/static_pdf_files.txt'
         )
         make_static_file_report(self.source_dir, u'translation')
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/reports/static_html_files.txt',
             self.destiny_dir + u'/static_html_files.txt'
         )
         make_static_file_report(self.source_dir, u'xml')
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/reports/static_xml_files.txt',
             self.destiny_dir + u'/static_xml_files.txt'
         )
         make_section_catalog_report(self.source_dir, self.cisis_dir)
-        self._put(
+        self.client.put(
             self.source_dir + u'/bases/reports/static_section_catalog.txt',
             self.destiny_dir + u'/static_section_catalog.txt'
         )
