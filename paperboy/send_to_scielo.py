@@ -52,18 +52,18 @@ def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
     status = '1'  # erro de acordo com stdout do CISIS
 
 
-    command = [remove_last_slash(cisis_dir) + '/mx' if cisis_dir else 'mx']
+    command = [remove_last_slash(cisis_dir) + u'/mx' if cisis_dir else u'mx']
     command.append(mst_input)
     if fltr:
-        command.append('btell=0')
+        command.append(u'btell=0')
         command.append(fltr)
     if proc:
         command.append(proc)
-    command.append('iso=%s' % (iso_output))
-    command.append('-all')
-    command.append('now')
+    command.append(u'iso=%s' % (iso_output))
+    command.append(u'-all')
+    command.append(u'now')
 
-    logger.debug('Running: %s' % ' '.join(command))
+    logger.debug(u'Running: %s' % u' '.join(command))
     try:
         status = subprocess.call(command)
     except OSError as e:
@@ -84,14 +84,14 @@ def make_section_catalog_report(source_dir, cisis_dir):
 
     logger.info(u'Making report static_section_catalog.txt')
 
-    command = """mkdir -p %s/bases/reports; %s/mx %s/bases/issue/issue btell=0 "pft=if p(v49) then (v35[1],v65[1]*0.4,s(f(val(s(v36[1]*4.3))+10000,2,0))*1.4,'|',v49^l,'|',v49^c,'|',v49^t,/) fi" lw=0 -all now > %s/bases/reports/static_section_catalog.txt""" % (
+    command = u"""mkdir -p %s/bases/reports; %s/mx %s/bases/issue/issue btell=0 "pft=if p(v49) then (v35[1],v65[1]*0.4,s(f(val(s(v36[1]*4.3))+10000,2,0))*1.4,'|',v49^l,'|',v49^c,'|',v49^t,/) fi" lw=0 -all now > %s/bases/reports/static_section_catalog.txt""" % (
         source_dir,
         cisis_dir,
         source_dir,
         source_dir,
     )
 
-    logger.debug('Running: %s' % command)
+    logger.debug(u'Running: %s' % command)
 
     try:
         status = subprocess.Popen(command, shell=True)
@@ -108,7 +108,7 @@ def make_static_file_report(source_dir, report):
 
     logger.info(u'Making report static_%s_files.txt' % report_name)
 
-    command = 'mkdir -p %s/bases/%s; mkdir -p %s/bases/reports; cd %s/bases/%s; find . -name "*.%s*" > %s/bases/reports/static_%s_files.txt' %(
+    command = u'mkdir -p %s/bases/%s; mkdir -p %s/bases/reports; cd %s/bases/%s; find . -name "*.%s*" > %s/bases/reports/static_%s_files.txt' %(
         source_dir,
         report,
         source_dir,
@@ -119,7 +119,7 @@ def make_static_file_report(source_dir, report):
         report_name
     )
 
-    logger.debug('Running: %s' % command)
+    logger.debug(u'Running: %s' % command)
     try:
         status = subprocess.Popen(command, shell=True)
         status.wait()
@@ -146,12 +146,12 @@ class Delivery(object):
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
-        if str(port) == '22':
+        if str(port) == u'22':
             self.client = SFTP(server, int(port), user, password)
-        elif str(port) == '21': 
+        elif str(port) == u'21': 
             self.client = FTP(server, int(port), user, password)
         else:
-            raise TypeError('port must be 21 for ftp or 22 for sftp')
+            raise TypeError(u'port must be 21 for ftp or 22 for sftp')
 
     def _mkdir(self, path):
 
@@ -219,61 +219,61 @@ class Delivery(object):
 
         ## Making title ISO
         make_iso(
-            self.source_dir + '/bases/title/title',
-            self.source_dir + '/bases/title/title.iso',
+            self.source_dir + u'/bases/title/title',
+            self.source_dir + u'/bases/title/title.iso',
             self.cisis_dir
         )
         self._put(
-            self.source_dir + '/bases/title/title.iso',
-            self.destiny_dir + '/title.iso'
+            self.source_dir + u'/bases/title/title.iso',
+            self.destiny_dir + u'/title.iso'
         )
 
         ## Making issue ISO
         make_iso(
-            self.source_dir + '/bases/issue/issue',
-            self.source_dir + '/bases/issue/issue.iso',
+            self.source_dir + u'/bases/issue/issue',
+            self.source_dir + u'/bases/issue/issue.iso',
             self.cisis_dir
         )
         self._put(
-            self.source_dir + '/bases/issue/issue.iso',
-            self.destiny_dir + '/issue.iso'
+            self.source_dir + u'/bases/issue/issue.iso',
+            self.destiny_dir + u'/issue.iso'
         )
 
         ## Making issues ISO
         make_iso(
-            self.source_dir + '/bases/artigo/artigo',
-            self.source_dir + '/bases/issue/issues.iso',
+            self.source_dir + u'/bases/artigo/artigo',
+            self.source_dir + u'/bases/issue/issues.iso',
             self.cisis_dir,
-            'TP=I'
+            u'TP=I'
         )
         self._put(
-            self.source_dir + '/bases/issue/issues.iso',
-            self.destiny_dir + '/issues.iso'
+            self.source_dir + u'/bases/issue/issues.iso',
+            self.destiny_dir + u'/issues.iso'
         )
 
         ## Making article ISO
         make_iso(
-            self.source_dir + '/bases/artigo/artigo',
-            self.source_dir + '/bases/artigo/artigo.iso',
+            self.source_dir + u'/bases/artigo/artigo',
+            self.source_dir + u'/bases/artigo/artigo.iso',
             self.cisis_dir,
-            'TP=H',
-            '''"proc='d91<91 0>',ref(mfn-1,v91),'</91>'"'''
+            u'TP=H',
+            u'''"proc='d91<91 0>',ref(mfn-1,v91),'</91>'"'''
         )
         self._put(
-            self.source_dir + '/bases/artigo/artigo.iso',
-            self.destiny_dir + '/artigo.iso'
+            self.source_dir + u'/bases/artigo/artigo.iso',
+            self.destiny_dir + u'/artigo.iso'
         )
 
         ## Making bib4cit ISO
         make_iso(
-            self.source_dir + '/bases/artigo/artigo',
-            self.source_dir + '/bases/artigo/bib4cit.iso',
+            self.source_dir + u'/bases/artigo/artigo',
+            self.source_dir + u'/bases/artigo/bib4cit.iso',
             self.cisis_dir,
-            'TP=C'
+            u'TP=C'
         )
         self._put(
-            self.source_dir + '/bases/artigo/bib4cit.iso',
-            self.destiny_dir + '/bib4cit.iso'
+            self.source_dir + u'/bases/artigo/bib4cit.iso',
+            self.destiny_dir + u'/bib4cit.iso'
         )
 
     def send_static_reports(self):
@@ -292,25 +292,25 @@ class Delivery(object):
         Article Meta API.
         """
 
-        make_static_file_report(self.source_dir, 'pdf')
+        make_static_file_report(self.source_dir, u'pdf')
         self._put(
-            self.source_dir + '/bases/reports/static_pdf_files.txt',
-            self.destiny_dir + '/static_pdf_files.txt'
+            self.source_dir + u'/bases/reports/static_pdf_files.txt',
+            self.destiny_dir + u'/static_pdf_files.txt'
         )
-        make_static_file_report(self.source_dir, 'translation')
+        make_static_file_report(self.source_dir, u'translation')
         self._put(
-            self.source_dir + '/bases/reports/static_html_files.txt',
-            self.destiny_dir + '/static_html_files.txt'
+            self.source_dir + u'/bases/reports/static_html_files.txt',
+            self.destiny_dir + u'/static_html_files.txt'
         )
-        make_static_file_report(self.source_dir, 'xml')
+        make_static_file_report(self.source_dir, u'xml')
         self._put(
-            self.source_dir + '/bases/reports/static_xml_files.txt',
-            self.destiny_dir + '/static_xml_files.txt'
+            self.source_dir + u'/bases/reports/static_xml_files.txt',
+            self.destiny_dir + u'/static_xml_files.txt'
         )
         make_section_catalog_report(self.source_dir, self.cisis_dir)
         self._put(
-            self.source_dir + '/bases/reports/static_section_catalog.txt',
-            self.destiny_dir + '/static_section_catalog.txt'
+            self.source_dir + u'/bases/reports/static_section_catalog.txt',
+            self.destiny_dir + u'/static_section_catalog.txt'
         )
 
 
@@ -318,9 +318,9 @@ class Delivery(object):
 
         source_type = source_type if source_type else self.source_type
 
-        if source_type == 'isos':
+        if source_type == u'isos':
             self.send_isos()
-        elif source_type == 'reports':
+        elif source_type == u'reports':
             self.send_static_reports()
         else:
             self.send_isos()
@@ -328,10 +328,10 @@ class Delivery(object):
 
 def main():
 
-    setts = settings.get('app:main', {})
+    setts = settings.get(u'app:main', {})
 
     parser = argparse.ArgumentParser(
-        description='Tools to send ISO databases to SciELO Network processing'
+        description=u'Tools to send ISO databases to SciELO Network processing'
     )
 
     parser.add_argument(

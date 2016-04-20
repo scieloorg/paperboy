@@ -51,7 +51,7 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
     status = '1'  # erro de acordo com stdout do CISIS
 
     command = remove_last_slash(cisis_dir) + '/crunchmf' if cisis_dir else 'crunchmf'
-    logger.debug('Running: %s %s %s' % (command, mst_input, mst_output))
+    logger.debug(u'Running: %s %s %s' % (command, mst_input, mst_output))
     try:
         status = subprocess.call([command, mst_input, mst_output])
     except OSError as e:
@@ -132,7 +132,7 @@ class Delivery(object):
         elif str(port) == '21': 
             self.client = FTP(server, int(port), user, password)
         else:
-            raise TypeError('port must be 21 for ftp or 22 for sftp')
+            raise TypeError(u'port must be 21 for ftp or 22 for sftp')
 
     def _local_remove(self, path):
 
@@ -148,29 +148,29 @@ class Delivery(object):
 
     def transfer_data_general(self, base_path):
 
-        base_path = base_path.replace('\\', '/')
+        base_path = base_path.replace(u'\\', u'/')
 
         # Cria a estrutura de diretorio informada em base_path dentro de destiny_dir
-        path = ''
-        for item in base_path.split('/'):
-            path += '/' + item
+        path = u''
+        for item in base_path.split(u'/'):
+            path += u'/' + item
             self.client.mkdir(self.destiny_dir + path)
 
         # Cria recursivamente todo conteudo baixo o source_dir + base_path
-        tree = os.walk(self.source_dir + '/' + base_path)
+        tree = os.walk(self.source_dir + u'/' + base_path)
         for item in tree:
-            root = item[0].replace('\\', '/')
-            current = root.replace(self.source_dir+'/', '')
+            root = item[0].replace(u'\\', u'/')
+            current = root.replace(self.source_dir+u'/', '')
             dirs = item[1]
             files = item[2]
 
             for fl in files:
-                from_fl = root + '/' + fl
-                to_fl = self.destiny_dir + '/' + current + '/' + fl
+                from_fl = root + u'/' + fl
+                to_fl = self.destiny_dir + u'/' + current + u'/' + fl
                 self.client.put(from_fl, to_fl)
 
             for directory in dirs:
-                self.client.mkdir(self.destiny_dir + '/' + current + '/' + directory)
+                self.client.mkdir(self.destiny_dir + u'/' + current + u'/' + directory)
 
     def transfer_data_databases(self, base_path):
         """
@@ -183,32 +183,32 @@ class Delivery(object):
         convert the files to windown compatible files. The default is false.
         """
 
-        base_path = base_path.replace('\\', '/')
+        base_path = base_path.replace(u'\\', u'/')
 
-        allowed_extensions = ['mst', 'xrf']
+        allowed_extensions = [u'mst', u'xrf']
 
         # Cria a estrutura de diretorio informada em base_path dentro de destiny_dir
-        path = ''
-        for item in base_path.split('/'):
-            path += '/' + item
+        path = u''
+        for item in base_path.split(u'/'):
+            path += u'/' + item
             self.client.mkdir(self.destiny_dir + path)
 
         # Cria recursivamente todo conteudo baixo o source_dir + base_path
-        tree = os.walk(self.source_dir + '/' + base_path)
+        tree = os.walk(self.source_dir + u'/' + base_path)
         converted = set()
         for item in tree:
-            root = item[0].replace('\\', '/')
-            current = root.replace(self.source_dir+'/', '')
+            root = item[0].replace(u'\\', u'/')
+            current = root.replace(self.source_dir + u'/', u'')
             dirs = item[1]
             files = item[2]
 
             for fl in files:
                 if not fl[-3:].lower() in allowed_extensions:
                     continue
-                from_fl = root + '/' + fl
+                from_fl = root + u'/' + fl
                 from_fl_name = from_fl[:-4]
-                converted_fl = from_fl_name + '_converted'
-                to_fl = self.destiny_dir + '/' + current + '/' + fl
+                converted_fl = from_fl_name + u'_converted'
+                to_fl = self.destiny_dir + u'/' + current + u'/' + fl
 
                 if not self.compatibility_mode:
                     self.client.put(from_fl, to_fl)
@@ -232,24 +232,24 @@ class Delivery(object):
 
                 to_fl = to_fl[:-4]
                 for extension in allowed_extensions:
-                    self.client.put(from_fl + '.' + extension, to_fl + '.' + extension)
-                    self._local_remove(from_fl + '.' + extension)
+                    self.client.put(from_fl + u'.' + extension, to_fl + u'.' + extension)
+                    self._local_remove(from_fl + u'.' + extension)
 
             for directory in dirs:
-                self.client.mkdir(self.destiny_dir + '/' + current + '/' + directory)
+                self.client.mkdir(self.destiny_dir + u'/' + current + u'/' + directory)
 
     def run_serial(self):
 
-        self.client.mkdir(self.destiny_dir + '/serial')
+        self.client.mkdir(self.destiny_dir + u'/serial')
 
         logger.info(u'Copying scilista.lst file')
-        self.client.put(self.scilista, self.destiny_dir + '/serial/scilist.lst')
+        self.client.put(self.scilista, self.destiny_dir + u'/serial/scilist.lst')
 
         logger.info(u'Copying issue database')
-        self.transfer_data_databases('serial/issue')
+        self.transfer_data_databases(u'serial/issue')
 
         logger.info(u'Copying title database')
-        self.transfer_data_databases('serial/title')
+        self.transfer_data_databases(u'serial/title')
 
         for item in self._scilista:
             journal_acronym = item[0]
@@ -261,7 +261,7 @@ class Delivery(object):
                 continue
 
             logger.info(u'Copying databases from %s %s' % (journal_acronym, issue_label))
-            self.transfer_data_databases('serial/%s/%s/base' % (
+            self.transfer_data_databases(u'serial/%s/%s/base' % (
                 journal_acronym, issue_label)
             )
 
@@ -277,7 +277,7 @@ class Delivery(object):
                 continue
 
             logger.info(u'Copying pdf\'s from %s %s' % (journal_acronym, issue_label))
-            self.transfer_data_general('bases/pdf/%s/%s' % (
+            self.transfer_data_general(u'bases/pdf/%s/%s' % (
                 journal_acronym, issue_label)
             )
 
@@ -293,7 +293,7 @@ class Delivery(object):
                 continue
 
             logger.info(u'Copying translations from %s %s' % (journal_acronym, issue_label))
-            self.transfer_data_general('bases/translation/%s/%s' % (
+            self.transfer_data_general(u'bases/translation/%s/%s' % (
                 journal_acronym, issue_label)
             )
 
@@ -309,7 +309,7 @@ class Delivery(object):
                 continue
 
             logger.info(u'Copying xmls from %s %s' % (journal_acronym, issue_label))
-            self.transfer_data_general('bases/xml/%s/%s' % (
+            self.transfer_data_general(u'bases/xml/%s/%s' % (
                 journal_acronym, issue_label)
             )
 
@@ -328,7 +328,7 @@ class Delivery(object):
                 journal_acronym, issue_label)
             )
 
-            self.transfer_data_general('htdocs/img/revistas/%s/%s' % (
+            self.transfer_data_general(u'htdocs/img/revistas/%s/%s' % (
                 journal_acronym, issue_label)
             )
 
@@ -336,15 +336,15 @@ class Delivery(object):
 
         source_type = source_type if source_type else self.source_type
 
-        if source_type == 'pdfs':
+        if source_type == u'pdfs':
             self.run_pdfs()
-        elif source_type == 'images':
+        elif source_type == u'images':
             self.run_images()
-        elif source_type == 'translations':
+        elif source_type == u'translations':
             self.run_translations()
-        elif source_type == 'databases':
+        elif source_type == u'databases':
             self.run_serial()
-        elif source_type == 'xmls':
+        elif source_type == u'xmls':
             self.run_xmls()
         else:
             self.run_serial()
@@ -359,7 +359,7 @@ def main():
     setts = settings.get('app:main', {})
 
     parser = argparse.ArgumentParser(
-        description='Tools to send images, PDF\'s, translations and databases from the local SciELO sites to the stage and production servers'
+        description=u'Tools to send images, PDF\'s, translations and databases from the local SciELO sites to the stage and production servers'
     )
 
     parser.add_argument(

@@ -66,15 +66,25 @@ class FTP(Communicator):
             )
             raise(e)
 
-    def put(self, from_fl, to_fl):
+    def put(self, from_fl, to_fl, binary=True):
 
         logger.info(u'Copying file from (%s) to (%s)' % (
             from_fl,
             to_fl
         ))
 
+        read_type = u'rb'
+
+        if not binary:
+            read_type = u'r'
+
         try:
-            self.client.storbinary('STOR %s' % to_fl , open(from_fl, 'r'))
+            command = u'STOR %s' % to_fl
+            if binary:
+                self.client.storbinary(command.encode('utf-8') , open(from_fl, read_type))
+            else:
+                self.client.storlines(command.encode('utf-8') , open(from_fl, read_type))
+
         except IOError:
             logger.error(u'File not found (%s)', from_fl)
 
@@ -124,9 +134,9 @@ class SFTP(Communicator):
         try:
             self.client.mkdir(path)
             logger.debug(u'Directory has being created (%s)' % path)
-        except IOError:
+        except IOError as e:
             try:
-                self.client.listdir(path)
+                self.client.stat(path)
                 logger.warning(u'Directory already exists (%s)' % path)
             except IOError as e:
                 logger.error(u'Fail while creating directory (%s): %s' % (
