@@ -42,10 +42,10 @@ config.ini::
     cisis_dir=/var/www/scielo/proc/cisis
     scilista=/var/www/scielo/serial/scilista.lst
     destiny_dir=/var/www/scielo
-    ssh_server=localhost
-    ssh_port=22
-    ssh_user=anonymous
-    ssh_password=anonymous
+    server=localhost
+    port=21
+    user=anonymous
+    password=anonymous
 
 Criar variável de ambiente indicando o arquivo de configuração
 
