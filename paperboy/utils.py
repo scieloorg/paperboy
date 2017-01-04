@@ -5,7 +5,7 @@ import logging
 
 try:
     from configparser import ConfigParser
-except:
+except ImportError:
     from ConfigParser import ConfigParser
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class Configuration(SingletonMixin):
         try:
             fp = open(filepath, 'r')
         except IOError:
-            logger.warning('file defined on PAPERBOY_SETTINGS_FILE environment variable not found (%s), no presets available' % filepath)
+            logger.warning('file defined on PAPERBOY_SETTINGS_FILE environment variable not found (%s), no presets available', filepath)
             return {}
 
         return cls(fp)

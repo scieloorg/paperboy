@@ -5,10 +5,6 @@ import logging.config
 import os
 import subprocess
 
-import paramiko
-from paramiko.client import SSHClient
-from paramiko import ssh_exception
-
 from paperboy.utils import settings
 from paperboy.communicator import SFTP, FTP
 
@@ -40,18 +36,19 @@ LOGGING = {
     }
 }
 
+
 def _config_logging(logging_level='INFO'):
 
     LOGGING['loggers']['paperboy']['level'] = logging_level
 
     logging.config.dictConfig(LOGGING)
 
+
 def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
 
-    logger.info(u'Making iso for %s' % mst_input)
+    logger.info(u'Making iso for %s', mst_input)
 
     status = '1'  # erro de acordo com stdout do CISIS
-
 
     command = [remove_last_slash(cisis_dir) + u'/mx' if cisis_dir else u'mx']
     command.append(mst_input)
@@ -64,18 +61,18 @@ def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
     command.append(u'-all')
     command.append(u'now')
 
-    logger.debug(u'Running: %s' % u' '.join(command))
+    logger.debug(u'Running: %s', u' '.join(command))
     try:
         status = subprocess.call(command)
-    except OSError as e:
+    except OSError:
         logger.error(u'Error while running mx, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
     if str(status) == '0':
-        logger.debug(u'ISO %s creation done for %s' % (iso_output, mst_input))
+        logger.debug(u'ISO %s creation done for %s', (iso_output, mst_input))
         return True
 
     if str(status) == '1':
-        logger.error(u'ISO creation did not work for %s' % mst_input)
+        logger.error(u'ISO creation did not work for %s', mst_input)
         return False
 
     return False
@@ -102,12 +99,13 @@ def make_section_catalog_report(source_dir, cisis_dir):
 
     logger.debug(u'Report static_section_catalog.txt done')
 
+
 def make_static_file_report(source_dir, report):
 
     extension_name = 'htm' if report == 'translation' else report
-    report_name =  'html' if report == 'translation' else report
+    report_name = 'html' if report == 'translation' else report
 
-    logger.info(u'Making report static_%s_files.txt' % report_name)
+    logger.info(u'Making report static_%s_files.txt', report_name)
 
     command = u'mkdir -p %s/bases/%s; mkdir -p %s/bases/reports; cd %s/bases/%s; find . -name "*.%s*" > %s/bases/reports/static_%s_files.txt' %(
         source_dir,
@@ -120,14 +118,15 @@ def make_static_file_report(source_dir, report):
         report_name
     )
 
-    logger.debug(u'Running: %s' % command)
+    logger.debug(u'Running: %s', command)
     try:
         status = subprocess.Popen(command, shell=True)
         status.wait()
-    except OSError as e:
-        logger.error(u'Error while creating report, static_%s_files.txt was not updated' % report_name)
+    except OSError:
+        logger.error(u'Error while creating report, static_%s_files.txt was not updated', report_name)
 
-    logger.debug(u'Report static_%s_files.txt done' % report_name)
+    logger.debug(u'Report static_%s_files.txt done', report_name)
+
 
 def remove_last_slash(path):
     path = path.replace('\\', '/')
@@ -149,7 +148,7 @@ class Delivery(object):
         self.destiny_dir = remove_last_slash(destiny_dir)
         if str(port) == u'22':
             self.client = SFTP(server, int(port), user, password)
-        elif str(port) == u'21': 
+        elif str(port) == u'21':
             self.client = FTP(server, int(port), user, password)
         else:
             raise TypeError(u'port must be 21 for ftp or 22 for sftp')
@@ -160,10 +159,12 @@ class Delivery(object):
 
         try:
             os.remove(path)
-            logger.debug(u'Temporary has being file removed (%s)' % path)
-        except OSError as e:
-            logger.error(u'Fail while removing temporary file (%s): %s' % (
-                path, e.strerror)
+            logger.debug(u'Temporary has being file removed (%s)', path)
+        except OSError:
+            logger.error(
+                u'Fail while removing temporary file (%s): %s',
+                path,
+                e.strerror
             )
 
     def send_isos(self):
@@ -174,7 +175,7 @@ class Delivery(object):
         Those files are used to produce bibliometric and site usage indicators.
         """
 
-        ## Making title ISO
+        # Making title ISO
         make_iso(
             self.source_dir + u'/bases/title/title',
             self.source_dir + u'/bases/title/title.iso',
@@ -185,7 +186,7 @@ class Delivery(object):
             self.destiny_dir + u'/title.iso'
         )
 
-        ## Making issue ISO
+        # Making issue ISO
         make_iso(
             self.source_dir + u'/bases/issue/issue',
             self.source_dir + u'/bases/issue/issue.iso',
@@ -196,7 +197,7 @@ class Delivery(object):
             self.destiny_dir + u'/issue.iso'
         )
 
-        ## Making issues ISO
+        # Making issues ISO
         make_iso(
             self.source_dir + u'/bases/artigo/artigo',
             self.source_dir + u'/bases/issue/issues.iso',
@@ -208,7 +209,7 @@ class Delivery(object):
             self.destiny_dir + u'/issues.iso'
         )
 
-        ## Making article ISO
+        # Making article ISO
         make_iso(
             self.source_dir + u'/bases/artigo/artigo',
             self.source_dir + u'/bases/artigo/artigo.iso',
@@ -221,7 +222,7 @@ class Delivery(object):
             self.destiny_dir + u'/artigo.iso'
         )
 
-        ## Making bib4cit ISO
+        # Making bib4cit ISO
         make_iso(
             self.source_dir + u'/bases/artigo/artigo',
             self.source_dir + u'/bases/artigo/bib4cit.iso',
@@ -245,8 +246,8 @@ class Delivery(object):
                 List of XML files available in the server side file system.
             static_section_catalog.txt
                 List of the journals sections extracted from the issue database.
-        Those files are used to improve the metadata quality and completeness of the
-        Article Meta API.
+        Those files are used to improve the metadata quality and completeness of
+        the Article Meta API.
         """
 
         make_static_file_report(self.source_dir, u'pdf')
@@ -270,7 +271,6 @@ class Delivery(object):
             self.destiny_dir + u'/static_section_catalog.txt'
         )
 
-
     def run(self, source_type=None):
 
         source_type = source_type if source_type else self.source_type
@@ -282,6 +282,7 @@ class Delivery(object):
         else:
             self.send_isos()
             self.send_static_reports()
+
 
 def main():
 

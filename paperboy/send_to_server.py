@@ -38,15 +38,17 @@ LOGGING = {
     }
 }
 
+
 def _config_logging(logging_level='INFO'):
 
     LOGGING['loggers']['paperboy']['level'] = logging_level
 
     logging.config.dictConfig(LOGGING)
 
+
 def master_conversor(mst_input, mst_output, cisis_dir=None):
 
-    logger.debug(u'Running database conversion for %s' % mst_input)
+    logger.debug(u'Running database conversion for %s', mst_input)
 
     status = '1'  # erro de acordo com stdout do CISIS
 
@@ -54,15 +56,15 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
     logger.debug(u'Running: %s %s %s' % (command, mst_input, mst_output))
     try:
         status = subprocess.call([command, mst_input, mst_output])
-    except OSError as e:
+    except OSError:
         logger.error(u'Error while running crunchmf, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
     if str(status) == '0':
-        logger.debug(u'Conversion done for %s' % mst_input)
+        logger.debug(u'Conversion done for %s', mst_input)
         return True
 
     if str(status) == '1':
-        logger.error(u'Conversion did not work fot %s' % mst_input)
+        logger.error(u'Conversion did not work fot %s', mst_input)
         return False
 
     return False
@@ -70,14 +72,17 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
 
 def parse_scilista(scilista):
 
-    logger.info(u'Loading scilista (%s)' % scilista)
+    logger.info(u'Loading scilista (%s)', scilista)
 
     lista = []
 
     try:
         f = open(scilista, 'r')
     except IOError:
-        logger.error(u'Fail while loading scilista, file not found (%s)' % scilista)
+        logger.error(
+            u'Fail while loading scilista, file not found (%s)',
+            scilista
+        )
     else:
         with f:
             count = 0
@@ -87,8 +92,12 @@ def parse_scilista(scilista):
                 splited_line = [i.strip().lower() for i in line.split(' ')]
 
                 if len(splited_line) > 3 or len(splited_line) < 2:
-                    logger.warning(u'Wrong value in the file (%s) line (%d): %s' % (
-                        scilista, count, line))
+                    logger.warning(
+                        u'Wrong value in the file (%s) line (%d): %s',
+                        scilista,
+                        count,
+                        line
+                    )
                     continue
 
                 if len(splited_line) == 3:  # issue to remove
@@ -100,7 +109,7 @@ def parse_scilista(scilista):
                 if len(splited_line) == 2:  # issue to remove
                     lista.append((splited_line[0], splited_line[1], False))
 
-        logger.info(u'scilista loaded (%s)' % scilista)
+        logger.info(u'scilista loaded (%s)', scilista)
 
     return lista
 
@@ -129,21 +138,23 @@ class Delivery(object):
 
         if str(port) == '22':
             self.client = SFTP(server, int(port), user, password)
-        elif str(port) == '21': 
+        elif str(port) == '21':
             self.client = FTP(server, int(port), user, password)
         else:
             raise TypeError(u'port must be 21 for ftp or 22 for sftp')
 
     def _local_remove(self, path):
 
-        logger.info(u'Removing temporary file (%s)' % path)
+        logger.info(u'Removing temporary file (%s)', path)
 
         try:
             os.remove(path)
-            logger.debug(u'Temporary has being file removed (%s)' % path)
-        except OSError as e:
-            logger.error(u'Fail while removing temporary file (%s): %s' % (
-                path, e.strerror)
+            logger.debug(u'Temporary has being file removed (%s)', path)
+        except OSError:
+            logger.error(
+                u'Fail while removing temporary file (%s): %s',
+                path,
+                e.strerror
             )
 
     def transfer_data_general(self, base_path):
@@ -254,13 +265,17 @@ class Delivery(object):
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
-            to_remove = item[2]
 
             # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copying databases from %s %s' % (journal_acronym, issue_label))
+            logger.info(
+                u'Copying databases from %s %s',
+                journal_acronym,
+                issue_label
+            )
+
             self.transfer_data_databases(u'serial/%s/%s/base' % (
                 journal_acronym, issue_label)
             )
@@ -270,13 +285,17 @@ class Delivery(object):
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
-            to_remove = item[2]
 
             # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copying pdf\'s from %s %s' % (journal_acronym, issue_label))
+            logger.info(
+                u'Copying pdf\'s from %s %s',
+                journal_acronym,
+                issue_label
+            )
+
             self.transfer_data_general(u'bases/pdf/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -286,13 +305,17 @@ class Delivery(object):
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
-            to_remove = item[2]
 
             # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copying translations from %s %s' % (journal_acronym, issue_label))
+            logger.info(
+                u'Copying translations from %s %s',
+                journal_acronym,
+                issue_label
+            )
+
             self.transfer_data_general(u'bases/translation/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -302,13 +325,17 @@ class Delivery(object):
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
-            to_remove = item[2]
 
             # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copying xmls from %s %s' % (journal_acronym, issue_label))
+            logger.info(
+                u'Copying xmls from %s %s',
+                journal_acronym,
+                issue_label
+            )
+
             self.transfer_data_general(u'bases/xml/%s/%s' % (
                 journal_acronym, issue_label)
             )
@@ -318,14 +345,15 @@ class Delivery(object):
         for item in self._scilista:
             journal_acronym = item[0]
             issue_label = item[1]
-            to_remove = item[2]
 
             # pulando itens do scilista indicados para exclusao, ex: rsap v12n3 del
             if item[2]:
                 continue
 
-            logger.info(u'Copying images from %s %s' % (
-                journal_acronym, issue_label)
+            logger.info(
+                u'Copying images from %s %s',
+                journal_acronym,
+                issue_label
             )
 
             self.transfer_data_general(u'htdocs/img/revistas/%s/%s' % (

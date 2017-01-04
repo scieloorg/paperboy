@@ -8,15 +8,17 @@ import ftplib
 
 logger = logging.getLogger(__name__)
 
+
 class Communicator(object):
 
     def __init__(self, host, port, user, password):
-        
+
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self._active_client = None
+
 
 class FTP(Communicator):
     ftp_client = None
@@ -32,46 +34,53 @@ class FTP(Communicator):
             return self.ftp_client
 
     def exists_dir(self, path):
-        logger.info(u'Checking if directory already exists (%s)' % path)
+        logger.info(u'Checking if directory already exists (%s)', path)
 
         try:
             stdout = self.client.nlst(str(path))
-            logger.debug(u'Directory already exists (%s)' % path)
+            logger.debug(u'Directory already exists (%s)', path)
             return True
         except ftplib.error_perm:
-            logger.debug(u'Directory do not exists (%s)' % path)
+            logger.debug(u'Directory do not exists (%s)', path)
 
         return False
 
     def mkdir(self, path):
 
-        logger.info(u'Creating directory (%s)' % path)
+        logger.info(u'Creating directory (%s)', path)
 
         try:
             self.client.mkd(path)
             logger.debug(u'Directory has being created (%s)' % path)
         except ftplib.error_perm as e:
             if not self.exists_dir(path):
-                logger.error(u'Fail while creating directory (%s): %s', path, e.message)
-    
+                logger.error(
+                    u'Fail while creating directory (%s): %s',
+                    path,
+                    e.message
+                )
+
     def chdir(self, path):
 
-        logger.info(u'Changing to directory (%s)' % path)
+        logger.info(u'Changing to directory (%s)', path)
 
         try:
             self.client.chdir(path)
         except IOError as e:
-            logger.error(u'Fail while accessing directory (%s): %s' % (
-                path, e.strerror)
+            logger.error(
+                u'Fail while accessing directory (%s): %s',
+                path,
+                e.strerror
             )
             raise(e)
 
     def put(self, from_fl, to_fl, binary=True):
 
-        logger.info(u'Copying file from (%s) to (%s)' % (
+        logger.info(
+            u'Copying file from (%s) to (%s)'
             from_fl,
             to_fl
-        ))
+        )
 
         read_type = u'rb'
 
@@ -81,14 +90,19 @@ class FTP(Communicator):
         try:
             command = u'STOR %s' % to_fl
             if binary:
-                self.client.storbinary(command.encode('utf-8') , open(from_fl, read_type))
+                self.client.storbinary(
+                    command.encode('utf-8'), open(from_fl, read_type)
+                )
             else:
-                self.client.storlines(command.encode('utf-8') , open(from_fl, read_type))
+                self.client.storlines(
+                    command.encode('utf-8'), open(from_fl, read_type)
+                )
 
         except IOError:
             logger.error(u'File not found (%s)', from_fl)
 
-        logger.debug(u'File has being copied (%s)' % to_fl)
+        logger.debug(u'File has being copied (%s)', to_fl)
+
 
 class SFTP(Communicator):
     ssh_client = None
@@ -105,7 +119,11 @@ class SFTP(Communicator):
 
     def _client(self):
 
-        logger.info(u'Conecting through SSH to the server (%s:%s)',self.host, self.port)
+        logger.info(
+            u'Conecting through SSH to the server (%s:%s)',
+            self.host,
+            self.port
+        )
 
         try:
             self.ssh_client = SSHClient()
@@ -119,7 +137,8 @@ class SFTP(Communicator):
                 compress=True
             )
         except ssh_exception.AuthenticationException:
-            logger.error(u'Fail while connecting through SSH. Check your creadentials.')
+            logger.error(
+                u'Fail while connecting through SSH. Check your creadentials.')
             return None
         except ssh_exception.NoValidConnectionsError:
             logger.error(u'Fail while connecting through SSH. Check your credentials or the server availability.')
@@ -129,48 +148,56 @@ class SFTP(Communicator):
 
     def mkdir(self, path):
 
-        logger.info(u'Creating directory (%s)' % path)
+        logger.info(u'Creating directory (%s)', path)
 
         try:
             self.client.mkdir(path)
-            logger.debug(u'Directory has being created (%s)' % path)
+            logger.debug(u'Directory has being created (%s)', path)
         except IOError as e:
             try:
                 self.client.stat(path)
-                logger.warning(u'Directory already exists (%s)' % path)
+                logger.warning(u'Directory already exists (%s)', path)
             except IOError as e:
-                logger.error(u'Fail while creating directory (%s): %s' % (
-                    path, e.strerror)
+                logger.error(
+                    u'Fail while creating directory (%s): %s'
+                    path,
+                    e.strerror
                 )
                 raise(e)
 
     def chdir(self, path):
 
-        logger.info(u'Changing to directory (%s)' % path)
+        logger.info(u'Changing to directory (%s)', path)
 
         try:
             self.client.chdir(path)
         except IOError as e:
-            logger.error(u'Fail while accessing directory (%s): %s' % (
-                path, e.strerror)
+            logger.error(
+                u'Fail while accessing directory (%s): %s'
+                path,
+                e.strerror
             )
             raise(e)
 
     def put(self, from_fl, to_fl):
 
-        logger.info(u'Copying file from (%s) to (%s)' % (
+        logger.info(
+            u'Copying file from (%s) to (%s)',
             from_fl,
             to_fl
-        ))
+        )
 
         try:
             self.client.put(from_fl, to_fl)
-            logger.debug(u'File has being copied (%s)' % to_fl)
+            logger.debug(u'File has being copied (%s)', to_fl)
         except OSError as e:
-            logger.error(u'Fail while copying file (%s), file not found',
+            logger.error(
+                u'Fail while copying file (%s), file not found',
                 to_fl
             )
         except IOError as e:
-            logger.error(u'Fail while copying file (%s): %s' % (
-                to_fl, e.strerror)
+            logger.error(
+                u'Fail while copying file (%s): %s',
+                to_fl,
+                e.strerror
             )
