@@ -1,7 +1,7 @@
 Paperboy
 ========
 
-Utilitário para envio de dados de sites locais SciELO para servidores SciELO. O 
+Utilitário para envio de dados SciELO de servidores de sites locais para de processamento e também de servidores de uma coleção para o de processamento da rede. O 
 utilitario permite o envio de bases para processamento, images, pdfs, traduções
 e XML's.
 
@@ -60,8 +60,14 @@ Windows
 Utilitários disponíveis
 
 * paperboy_delivery_to_server
+
+    Executa o envio de dados do site local para o servidor de processamento
+
 * paperboy_delivery_to_scielo
 
+    Executa o envio de dados de uma coleção SciELO para o processamento dos dados de toda a Rede SciELO
+    
+    
 Para ajuda
 
     paperboy_delivery_to_server --help
