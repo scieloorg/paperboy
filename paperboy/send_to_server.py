@@ -150,7 +150,7 @@ class Delivery(object):
         try:
             os.remove(path)
             logger.debug(u'Temporary has being file removed (%s)', path)
-        except OSError:
+        except OSError as e:
             logger.error(
                 u'Fail while removing temporary file (%s): %s',
                 path,

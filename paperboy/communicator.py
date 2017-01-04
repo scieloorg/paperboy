@@ -77,7 +77,7 @@ class FTP(Communicator):
     def put(self, from_fl, to_fl, binary=True):
 
         logger.info(
-            u'Copying file from (%s) to (%s)'
+            u'Copying file from (%s) to (%s)',
             from_fl,
             to_fl
         )

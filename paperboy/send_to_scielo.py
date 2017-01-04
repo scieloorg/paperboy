@@ -68,7 +68,7 @@ def make_iso(mst_input, iso_output, cisis_dir=None, fltr=None, proc=None):
         logger.error(u'Error while running mx, check if the command is available on the syspath, or the CISIS path was correctly indicated in the config file')
 
     if str(status) == '0':
-        logger.debug(u'ISO %s creation done for %s', (iso_output, mst_input))
+        logger.debug(u'ISO %s creation done for %s', iso_output, mst_input)
         return True
 
     if str(status) == '1':
@@ -160,7 +160,7 @@ class Delivery(object):
         try:
             os.remove(path)
             logger.debug(u'Temporary has being file removed (%s)', path)
-        except OSError:
+        except OSError as e:
             logger.error(
                 u'Fail while removing temporary file (%s): %s',
                 path,
