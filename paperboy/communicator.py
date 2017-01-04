@@ -159,7 +159,7 @@ class SFTP(Communicator):
                 logger.warning(u'Directory already exists (%s)', path)
             except IOError as e:
                 logger.error(
-                    u'Fail while creating directory (%s): %s'
+                    u'Fail while creating directory (%s): %s',
                     path,
                     e.strerror
                 )
@@ -173,7 +173,7 @@ class SFTP(Communicator):
             self.client.chdir(path)
         except IOError as e:
             logger.error(
-                u'Fail while accessing directory (%s): %s'
+                u'Fail while accessing directory (%s): %s',
                 path,
                 e.strerror
             )
