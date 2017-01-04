@@ -89,12 +89,12 @@ def make_section_catalog_report(source_dir, cisis_dir):
         source_dir,
     )
 
-    logger.debug(u'Running: %s' % command)
+    logger.debug(u'Running: %s', command)
 
     try:
         status = subprocess.Popen(command, shell=True)
         status.wait()
-    except OSError as e:
+    except OSError:
         logger.error(u'Error while creating report, static_section_catalog.txt was not updated')
 
     logger.debug(u'Report static_section_catalog.txt done')
@@ -155,7 +155,7 @@ class Delivery(object):
 
     def _local_remove(self, path):
 
-        logger.info(u'Removing temporary file (%s)' % path)
+        logger.info(u'Removing temporary file (%s)', path)
 
         try:
             os.remove(path)

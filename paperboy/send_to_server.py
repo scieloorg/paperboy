@@ -53,7 +53,7 @@ def master_conversor(mst_input, mst_output, cisis_dir=None):
     status = '1'  # erro de acordo com stdout do CISIS
 
     command = remove_last_slash(cisis_dir) + '/crunchmf' if cisis_dir else 'crunchmf'
-    logger.debug(u'Running: %s %s %s' % (command, mst_input, mst_output))
+    logger.debug(u'Running: %s %s %s', command, mst_input, mst_output)
     try:
         status = subprocess.call([command, mst_input, mst_output])
     except OSError:

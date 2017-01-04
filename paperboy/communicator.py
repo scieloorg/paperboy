@@ -37,7 +37,7 @@ class FTP(Communicator):
         logger.info(u'Checking if directory already exists (%s)', path)
 
         try:
-            stdout = self.client.nlst(str(path))
+            self.client.nlst(str(path))
             logger.debug(u'Directory already exists (%s)', path)
             return True
         except ftplib.error_perm:
@@ -51,7 +51,7 @@ class FTP(Communicator):
 
         try:
             self.client.mkd(path)
-            logger.debug(u'Directory has being created (%s)' % path)
+            logger.debug(u'Directory has being created (%s)', path)
         except ftplib.error_perm as e:
             if not self.exists_dir(path):
                 logger.error(
