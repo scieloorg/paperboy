@@ -443,7 +443,6 @@ def main():
         u'--port',
         u'-x',
         default=setts.get(u'port', u'22'),
-        choices=['22', '21'],
         help=u'FTP or SFTP port'
     )
 
