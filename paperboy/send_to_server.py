@@ -126,7 +126,7 @@ def remove_last_slash(path):
 class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
-            compatibility_mode, server, port, user, password):
+            compatibility_mode, server, server_type, port, user, password):
 
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
@@ -136,12 +136,12 @@ class Delivery(object):
         self.destiny_dir = remove_last_slash(destiny_dir)
         self.compatibility_mode = compatibility_mode
 
-        if str(port) == '22':
+        if str(server_type) == 'sftp':
             self.client = SFTP(server, int(port), user, password)
-        elif str(port) == '21':
+        elif str(server_type) == 'ftp':
             self.client = FTP(server, int(port), user, password)
         else:
-            raise TypeError(u'port must be 21 for ftp or 22 for sftp')
+            raise TypeError(u'server_type must be ftp or sftp')
 
     def _local_remove(self, path):
 
@@ -254,7 +254,7 @@ class Delivery(object):
         self.client.mkdir(self.destiny_dir + u'/serial')
 
         logger.info(u'Copying scilista.lst file')
-        self.client.put(self.scilista, self.destiny_dir + u'/serial/scilist.lst')
+        self.client.put(self.scilista, self.destiny_dir + u'/serial/scilista.lst')
 
         logger.info(u'Copying issue database')
         self.transfer_data_databases(u'serial/issue')
@@ -440,10 +440,17 @@ def main():
     )
 
     parser.add_argument(
+        u'--server_type',
+        u'-e',
+        default=setts.get(u'server_type', u'sftp'),
+        choices=['ftp', 'sftp']
+    )
+
+    parser.add_argument(
         u'--port',
         u'-x',
         default=setts.get(u'port', u'22'),
-        help=u'FTP or SFTP port'
+        help=u'usually 22 for SFTP connection or 21 for FTP connection'
     )
 
     parser.add_argument(
@@ -480,6 +487,7 @@ def main():
         args.destiny_dir,
         args.compatibility_mode,
         args.server,
+        args.server_type,
         args.port,
         args.user,
         args.password

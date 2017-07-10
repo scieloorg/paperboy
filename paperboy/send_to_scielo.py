@@ -140,18 +140,20 @@ def remove_last_slash(path):
 class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, source_dir, destiny_dir, server,
-                 port, user, password):
+                 server_type, port, user, password, original_dataset):
 
         self.source_type = source_type
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_dir = remove_last_slash(source_dir)
         self.destiny_dir = remove_last_slash(destiny_dir)
-        if str(port) == u'22':
+        self.original_dataset = bool(original_dataset)
+
+        if str(server_type) == 'sftp':
             self.client = SFTP(server, int(port), user, password)
-        elif str(port) == u'21':
+        elif str(server_type) == 'ftp':
             self.client = FTP(server, int(port), user, password)
         else:
-            raise TypeError(u'port must be 21 for ftp or 22 for sftp')
+            raise TypeError(u'server_type must be ftp or sftp')
 
     def _local_remove(self, path):
 
@@ -166,6 +168,47 @@ class Delivery(object):
                 path,
                 e.strerror
             )
+
+    def send_full_isos(self):
+        """
+        This method will prepare and send article, issue, issues and bib4cit
+        iso files to SciELO.
+
+        Those files are used to produce bibliometric and site usage indicators.
+        """
+
+        # Making title ISO
+        make_iso(
+            self.source_dir + u'/bases/title/title',
+            self.source_dir + u'/bases/title/title.iso',
+            self.cisis_dir
+        )
+        self.client.put(
+            self.source_dir + u'/bases/title/title.iso',
+            self.destiny_dir + u'/title.iso'
+        )
+
+        # Making issue ISO
+        make_iso(
+            self.source_dir + u'/bases/issue/issue',
+            self.source_dir + u'/bases/issue/issue.iso',
+            self.cisis_dir
+        )
+        self.client.put(
+            self.source_dir + u'/bases/issue/issue.iso',
+            self.destiny_dir + u'/issue.iso'
+        )
+
+        # Making article ISO
+        make_iso(
+            self.source_dir + u'/bases/artigo/artigo',
+            self.source_dir + u'/bases/artigo/artigo.iso',
+            self.cisis_dir
+        )
+        self.client.put(
+            self.source_dir + u'/bases/artigo/artigo.iso',
+            self.destiny_dir + u'/artigo.iso'
+        )
 
     def send_isos(self):
         """
@@ -275,12 +318,14 @@ class Delivery(object):
 
         source_type = source_type if source_type else self.source_type
 
+        sender = self.send_full_isos if self.original_dataset is True else self.send_isos
+
         if source_type == u'isos':
-            self.send_isos()
+            sender()
         elif source_type == u'reports':
             self.send_static_reports()
         else:
-            self.send_isos()
+            sender()
             self.send_static_reports()
 
 
@@ -307,6 +352,13 @@ def main():
     )
 
     parser.add_argument(
+        u'--original_dataset',
+        u'-o',
+        action="store_false",
+        help=u'Send the original dataset [title, issue, artigo] without bib4cit, all the content is available at artigo field 706=c 706=h 706=i 706=o.'
+    )
+
+    parser.add_argument(
         u'--source_dir',
         u'-s',
         default=setts.get(u'source_dir', u'.'),
@@ -328,11 +380,17 @@ def main():
     )
 
     parser.add_argument(
+        u'--server_type',
+        u'-e',
+        default=setts.get(u'server_type', u'sftp'),
+        choices=['ftp', 'sftp']
+    )
+
+    parser.add_argument(
         u'--port',
         u'-x',
         default=setts.get(u'port', u'22'),
-        choices=['22','21'],
-        help=u'22 for SFTP connection or 21 for FTP connection'
+        help=u'usually 22 for SFTP connection or 21 for FTP connection'
     )
 
     parser.add_argument(
@@ -366,9 +424,11 @@ def main():
         args.source_dir,
         args.destiny_dir,
         args.server,
+        args.server_type,
         args.port,
         args.user,
-        args.password
+        args.password,
+        args.original_dataset
     )
 
     delivery.run()

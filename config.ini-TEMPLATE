@@ -18,9 +18,9 @@ cisis_dir=/var/www/scielo/proc/cisis
 #destiny_dir=
 
 ## FTP or SFTP credentials
-## The protocol will be defined by the port [21, 22] where 21 will use the ftp
-## protocol and 22 will use the SFTP protocol.
+## The protocol will be defined by the server_type ['ftp', 'sftp']
 server=
-port=21
+server_type=sftp
+port=22
 user=
 password=
