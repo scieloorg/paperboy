@@ -180,23 +180,23 @@ class Delivery(object):
         # Making title ISO
         make_iso(
             self.source_dir + u'/bases/title/title',
-            self.source_dir + u'/bases/title/title.iso',
+            self.source_dir + u'/bases/title/title_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/title/title.iso',
-            self.destiny_dir + u'/title.iso'
+            self.source_dir + u'/bases/title/title_full.iso',
+            self.destiny_dir + u'/title_full.iso'
         )
 
         # Making issue ISO
         make_iso(
             self.source_dir + u'/bases/issue/issue',
-            self.source_dir + u'/bases/issue/issue.iso',
+            self.source_dir + u'/bases/issue/issue_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/issue/issue.iso',
-            self.destiny_dir + u'/issue.iso'
+            self.source_dir + u'/bases/issue/issue_full.iso',
+            self.destiny_dir + u'/issue_full.iso'
         )
 
         # Making article ISO
