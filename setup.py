@@ -12,7 +12,7 @@ tests_require = [
 
 setup(
     name="scielo_paperboy",
-    version="0.11.5",
+    version="0.12.5",
     description=u"Utilitary to send Images. PDF's, Translations and XML's from the local website to stanging and production servers",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",

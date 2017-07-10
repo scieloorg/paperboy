@@ -171,51 +171,55 @@ class Delivery(object):
 
     def send_full_isos(self):
         """
-        This method will prepare and send article, issue, issues and bib4cit
-        iso files to SciELO.
+        This method will prepare and send article, issue, and title iso files to
+        SciELO.
 
         Those files are used to produce bibliometric and site usage indicators.
+
+        This method will use the mst, xrf files available in bases-work directory
         """
 
         # Making title ISO
         make_iso(
-            self.source_dir + u'/bases/title/title',
-            self.source_dir + u'/bases/title/title_full.iso',
+            self.source_dir + u'/bases-work/title/title',
+            self.source_dir + u'/bases-work/title/title_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/title/title_full.iso',
+            self.source_dir + u'/bases-work/title/title_full.iso',
             self.destiny_dir + u'/title_full.iso'
         )
 
         # Making issue ISO
         make_iso(
-            self.source_dir + u'/bases/issue/issue',
-            self.source_dir + u'/bases/issue/issue_full.iso',
+            self.source_dir + u'/bases-work/issue/issue',
+            self.source_dir + u'/bases-work/issue/issue_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/issue/issue_full.iso',
+            self.source_dir + u'/bases-work/issue/issue_full.iso',
             self.destiny_dir + u'/issue_full.iso'
         )
 
         # Making article ISO
         make_iso(
-            self.source_dir + u'/bases/artigo/artigo',
-            self.source_dir + u'/bases/artigo/artigo_full.iso',
+            self.source_dir + u'/bases-work/artigo/artigo',
+            self.source_dir + u'/bases-work/artigo/artigo_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/artigo/artigo_full.iso',
+            self.source_dir + u'/bases-work/artigo/artigo_full.iso',
             self.destiny_dir + u'/artigo_full.iso'
         )
 
     def send_isos(self):
         """
-        This method will prepare and send article, issue, issues and bib4cit
+        This method will prepare and send article, issue, issues, title and bib4cit
         iso files to SciELO.
 
         Those files are used to produce bibliometric and site usage indicators.
+
+        This method will use the mst, xrf files available in bases directory
         """
 
         # Making title ISO
