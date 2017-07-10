@@ -202,12 +202,12 @@ class Delivery(object):
         # Making article ISO
         make_iso(
             self.source_dir + u'/bases/artigo/artigo',
-            self.source_dir + u'/bases/artigo/artigo.iso',
+            self.source_dir + u'/bases/artigo/artigo_full.iso',
             self.cisis_dir
         )
         self.client.put(
-            self.source_dir + u'/bases/artigo/artigo.iso',
-            self.destiny_dir + u'/artigo.iso'
+            self.source_dir + u'/bases/artigo/artigo_full.iso',
+            self.destiny_dir + u'/artigo_full.iso'
         )
 
     def send_isos(self):
