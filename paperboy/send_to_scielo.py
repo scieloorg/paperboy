@@ -354,7 +354,7 @@ def main():
     parser.add_argument(
         u'--original_dataset',
         u'-o',
-        action="store_false",
+        action="store_true",
         help=u'Send the original dataset [title, issue, artigo] without bib4cit, all the content is available at artigo field 706=c 706=h 706=i 706=o.'
     )
 
