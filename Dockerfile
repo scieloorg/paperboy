@@ -1,5 +1,6 @@
 FROM python:3.5-alpine
 ENV PYTHONUNBUFFERED 1
+ENV PAPERBOY_SETTINGS_FILE config.ini
 
 RUN apk --update add --no-cache \
 git gcc build-base libffi-dev openssl-dev

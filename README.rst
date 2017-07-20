@@ -5,6 +5,9 @@ Utilitário para envio de dados SciELO de servidores de sites locais para de pro
 utilitario permite o envio de bases para processamento, images, pdfs, traduções
 e XML's.
 
+PaperBoy Dockerizado?
+=====================
+
 Como instalar
 =============
 
