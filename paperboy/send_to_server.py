@@ -84,7 +84,7 @@ def parse_scilista(scilista):
             for line in f:
                 line = line.strip()
                 count += 1
-                splited_line = [i.strip().lower() for i in line.split(' ')]
+                splited_line = [i.strip() for i in line.split(' ')]
 
                 if len(splited_line) > 3 or len(splited_line) < 2:
                     logger.warning(u'Wrong value in the file (%s) line (%d): %s' % (
