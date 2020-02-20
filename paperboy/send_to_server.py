@@ -420,7 +420,7 @@ def main():
     )
     parser.add_argument(
         u'--serial_source_dir',
-        u'-s',
+        u'-b',
         default=setts.get(u'serial_source_dir', ''),
         help=u'absolute path where the SciELO site was installed. this directory must contain the serial directory'
     )
