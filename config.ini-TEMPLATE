@@ -4,6 +4,9 @@
 ## contains the directories proc, bases, htdocs, cgi-bin, serial.
 source_dir=/var/www/scielo
 
+## contains the directory: serial. Configure if source_dir has no serial folder
+#serial_source_dir=/scielo
+
 ## Full path to the CISIS utilitaries. It is usually installed on the directory
 ## proc/cisis of the SciELO Site.
 cisis_dir=/var/www/scielo/proc/cisis
