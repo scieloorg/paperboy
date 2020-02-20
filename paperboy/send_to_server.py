@@ -133,6 +133,7 @@ class Delivery(object):
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_type = source_type
         self.source_dir = remove_last_slash(source_dir)
+        self.serial_source_dir = self.source_dir
         self.destiny_dir = remove_last_slash(destiny_dir)
         self.compatibility_mode = compatibility_mode
 
@@ -204,12 +205,12 @@ class Delivery(object):
             path += u'/' + item
             self.client.mkdir(self.destiny_dir + path)
 
-        # Cria recursivamente todo conteudo baixo o source_dir + base_path
-        tree = os.walk(self.source_dir + u'/' + base_path)
+        # Cria recursivamente todo conteudo baixo o serial_source_dir + base_path
+        tree = os.walk(self.serial_source_dir + u'/' + base_path)
         converted = set()
         for item in tree:
             root = item[0].replace(u'\\', u'/')
-            current = root.replace(self.source_dir + u'/', u'')
+            current = root.replace(self.serial_source_dir + u'/', u'')
             dirs = item[1]
             files = item[2]
 
@@ -417,6 +418,12 @@ def main():
         default=setts.get(u'source_dir', u'.'),
         help=u'absolute path where the SciELO site was installed. this directory must contain the directories bases, htcos, proc and serial'
     )
+    parser.add_argument(
+        u'--serial_source_dir',
+        u'-s',
+        default=setts.get(u'serial_source_dir', ''),
+        help=u'absolute path where the SciELO site was installed. this directory must contain the serial directory'
+    )
 
     parser.add_argument(
         u'--destiny_dir',
@@ -492,5 +499,6 @@ def main():
         args.user,
         args.password
     )
+    delivery.serial_source_dir = args.serial_source_dir or args.source_dir
 
     delivery.run()
