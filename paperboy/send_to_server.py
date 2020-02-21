@@ -127,7 +127,7 @@ class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
             compatibility_mode, server, server_type, port, user, password):
-
+        self._serial_source_dir = None
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
         self.cisis_dir = remove_last_slash(cisis_dir)
@@ -143,6 +143,14 @@ class Delivery(object):
             self.client = FTP(server, int(port), user, password)
         else:
             raise TypeError(u'server_type must be ftp or sftp')
+
+    @property
+    def serial_source_dir(self):
+        return self._serial_source_dir
+
+    @serial_source_dir.setter
+    def serial_source_dir(self, value):
+        self._serial_source_dir = remove_last_slash(value)
 
     def _local_remove(self, path):
 
