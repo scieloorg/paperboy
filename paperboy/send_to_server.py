@@ -127,7 +127,6 @@ class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
             compatibility_mode, server, server_type, port, user, password):
-        self._serial_source_dir = None
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
         self.cisis_dir = remove_last_slash(cisis_dir)
@@ -146,11 +145,11 @@ class Delivery(object):
 
     @property
     def serial_source_dir(self):
-        return self._serial_source_dir
+        return self._serial_source_dir or self.source_dir
 
     @serial_source_dir.setter
     def serial_source_dir(self, value):
-        self._serial_source_dir = remove_last_slash(value)
+        self._serial_source_dir = remove_last_slash(value) if value else self.source_dir
 
     def _local_remove(self, path):
 
@@ -507,6 +506,6 @@ def main():
         args.user,
         args.password
     )
-    delivery.serial_source_dir = args.serial_source_dir or args.source_dir
+    delivery.serial_source_dir = args.serial_source_dir
 
     delivery.run()
