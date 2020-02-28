@@ -126,14 +126,13 @@ def remove_last_slash(path):
 class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
-            compatibility_mode, server, server_type, port, user, password):
-
+            compatibility_mode, server, server_type, port, user, password, serial_source_dir=None):
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
         self.cisis_dir = remove_last_slash(cisis_dir)
         self.source_type = source_type
         self.source_dir = remove_last_slash(source_dir)
-        self.serial_source_dir = self.source_dir
+        self.serial_source_dir = remove_last_slash(serial_source_dir) if serial_source_dir else self.source_dir
         self.destiny_dir = remove_last_slash(destiny_dir)
         self.compatibility_mode = compatibility_mode
 
@@ -497,8 +496,7 @@ def main():
         args.server_type,
         args.port,
         args.user,
-        args.password
+        args.password,
+        args.serial_source_dir
     )
-    delivery.serial_source_dir = args.serial_source_dir or args.source_dir
-
     delivery.run()
