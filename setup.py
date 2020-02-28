@@ -12,12 +12,10 @@ tests_require = [
 
 setup(
     name="scielo_paperboy",
-    version="0.12.6",
+    version="0.12.7",
     description=u"Utilitary to send Images. PDF's, Translations and XML's from the local website to stanging and production servers",
-    author="SciELO",
+    author="SciELO Dev Team",
     author_email="scielo-dev@googlegroups.com",
-    maintainer="Fabio Batalha",
-    maintainer_email="fabio.batalha@scielo.org",
     license="BSD License",
     url="http://github.com/scieloorg/paperboy",
     packages=find_packages(),
