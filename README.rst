@@ -43,6 +43,7 @@ config.ini::
 
     [app:main]
     source_dir=/var/www/scielo
+    serial_source_dir=/var/www/scielo
     cisis_dir=/var/www/scielo/proc/cisis
     scilista=/var/www/scielo/serial/scilista.lst
     destiny_dir=/var/www/scielo
